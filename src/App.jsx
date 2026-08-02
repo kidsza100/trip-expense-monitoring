@@ -54,9 +54,57 @@ function App() {
     }, 2000);
   };
 
-  // Save trips to localStorage whenever they change
+  const CLOUD_URL = 'https://kvdb.io/kidsza100_italy_trip_2026_v3/trips';
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Load from cloud on mount
+  useEffect(() => {
+    fetch(CLOUD_URL)
+      .then(res => {
+        if (res.ok) return res.json();
+        throw new Error("No remote data");
+      })
+      .then(data => {
+        if (data && Array.isArray(data) && data.length > 0) {
+          setTrips(data);
+        }
+      })
+      .catch(err => {
+        console.log("Cloud load failed on mount, using local cache", err);
+      });
+  }, []);
+
+  const handleSyncCloud = async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await fetch(CLOUD_URL);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data) && data.length > 0) {
+          setTrips(data);
+        }
+      }
+    } catch (err) {
+      console.error("Manual refresh failed", err);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 800);
+    }
+  };
+
+  // Save trips to localStorage and Cloud whenever they change
   useEffect(() => {
     localStorage.setItem('monitoring_trips_v8', JSON.stringify(trips));
+    
+    // Save to KVDB Cloud
+    fetch(CLOUD_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(trips)
+    }).catch(err => {
+      console.error("Cloud save failed", err);
+    });
   }, [trips]);
 
   const [theme, setTheme] = useState(() => localStorage.getItem('app_theme') || 'light');
@@ -491,6 +539,29 @@ function App() {
         </nav>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {/* Refresh/Sync Cloud Button */}
+          <button 
+            onClick={handleSyncCloud}
+            className="btn-action"
+            style={{ 
+              background: 'rgba(255,255,255,0.06)', 
+              border: '1px solid var(--border-color)', 
+              cursor: 'pointer', 
+              padding: '0.45rem', 
+              borderRadius: '8px', 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              color: 'var(--text-main)',
+              height: '38px',
+              width: '38px'
+            }}
+            title="Refresh Data from Cloud"
+            disabled={isRefreshing}
+          >
+            <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} />
+          </button>
+
           {/* Theme Toggle Button */}
           <button 
             onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
