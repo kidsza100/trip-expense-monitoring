@@ -33,7 +33,7 @@ import './App.css';
 function App() {
   // Load trips from localStorage or use initialTrips
   const [trips, setTrips] = useState(() => {
-    const saved = localStorage.getItem('monitoring_trips_v7');
+    const saved = localStorage.getItem('monitoring_trips_v8');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -56,7 +56,7 @@ function App() {
 
   // Save trips to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('monitoring_trips_v7', JSON.stringify(trips));
+    localStorage.setItem('monitoring_trips_v8', JSON.stringify(trips));
   }, [trips]);
 
   const [theme, setTheme] = useState(() => localStorage.getItem('app_theme') || 'light');
