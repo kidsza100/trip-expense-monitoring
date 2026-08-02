@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { initialTrips } from './data/trips';
+import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
+import { db } from './firebase';
 import { 
   Compass, 
   Plus, 
@@ -58,26 +60,67 @@ function App() {
     }, 2000);
   };
 
-  // Cloud sync placeholder - disabled until proper backend is set up
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isLoadedFromCloud] = useState(true); // always true now
+  const [isLoadedFromCloud, setIsLoadedFromCloud] = useState(false);
+  const isRemoteUpdate = useRef(false);
 
-  const handleSyncCloud = () => {
+  // Real-time Firebase Firestore Listener
+  useEffect(() => {
+    const tripDocRef = doc(db, "trips", "italy-2026");
+    
+    const unsubscribe = onSnapshot(tripDocRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const remoteData = snapshot.data();
+        if (remoteData && remoteData.trips && Array.isArray(remoteData.trips) && remoteData.trips.length > 0) {
+          isRemoteUpdate.current = true;
+          setTrips(remoteData.trips);
+        }
+      } else {
+        // Seed initial trips if Firestore document doesn't exist yet
+        setDoc(tripDocRef, { trips: initialTrips });
+      }
+      setIsLoadedFromCloud(true);
+    }, (error) => {
+      console.error("Firebase Firestore sync error:", error);
+      setIsLoadedFromCloud(true);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleSyncCloud = async () => {
     setIsRefreshing(true);
-    // Re-load from localStorage to reflect any manual changes
-    const saved = localStorage.getItem('monitoring_trips_v9');
-    if (saved) {
-      try {
-        setTrips(JSON.parse(saved));
-      } catch(e) {}
+    try {
+      const tripDocRef = doc(db, "trips", "italy-2026");
+      const docSnap = await getDoc(tripDocRef);
+      if (docSnap.exists()) {
+        const remoteData = docSnap.data();
+        if (remoteData && remoteData.trips && Array.isArray(remoteData.trips) && remoteData.trips.length > 0) {
+          isRemoteUpdate.current = true;
+          setTrips(remoteData.trips);
+        }
+      }
+    } catch (err) {
+      console.error("Manual Firebase sync error:", err);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 600);
     }
-    setTimeout(() => setIsRefreshing(false), 600);
   };
 
-  // Save trips to localStorage whenever they change
+  // Save trips to localStorage & Firebase Firestore whenever they change
   useEffect(() => {
     if (!isLoadedFromCloud) return;
+
     localStorage.setItem('monitoring_trips_v9', JSON.stringify(trips));
+
+    if (isRemoteUpdate.current) {
+      isRemoteUpdate.current = false;
+      return;
+    }
+
+    const tripDocRef = doc(db, "trips", "italy-2026");
+    setDoc(tripDocRef, { trips: trips }, { merge: true })
+      .catch((err) => console.error("Firebase write error:", err));
   }, [trips, isLoadedFromCloud]);
 
   const [theme, setTheme] = useState(() => localStorage.getItem('app_theme') || 'light');
