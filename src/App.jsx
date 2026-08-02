@@ -29,7 +29,8 @@ import {
   Copy,
   Sun,
   Moon,
-  Eye
+  Eye,
+  Receipt
 } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
@@ -56,6 +57,7 @@ function App() {
 
   const [copiedId, setCopiedId] = useState(null);
   const [previewTicket, setPreviewTicket] = useState(null);
+  const [previewReceiptUrl, setPreviewReceiptUrl] = useState(null);
 
   const handleCopyText = (text, id) => {
     navigator.clipboard.writeText(text);
@@ -177,6 +179,7 @@ function App() {
   const [newExpPaidBy, setNewExpPaidBy] = useState('Thitiwut');
   const [newExpDate, setNewExpDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [newExpHasTicket, setNewExpHasTicket] = useState(false);
+  const [newExpReceipt, setNewExpReceipt] = useState('');
 
   // Form states for Editing Expense
   const [editExpId, setEditExpId] = useState(null);
@@ -188,6 +191,20 @@ function App() {
   const [editExpDate, setEditExpDate] = useState('');
   const [editExpStatus, setEditExpStatus] = useState('paid');
   const [editExpHasTicket, setEditExpHasTicket] = useState(false);
+  const [editExpReceipt, setEditExpReceipt] = useState('');
+
+  const handleReceiptFileUpload = (file, callback) => {
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File size exceeds 5MB limit");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      callback(evt.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Form states for New Trip
   const [newTripName, setNewTripName] = useState('');
@@ -388,6 +405,7 @@ function App() {
       status: status,
       paidBy: newExpPaidBy || "Thitiwut",
       hasTicket: newExpHasTicket,
+      receiptUrl: newExpReceipt || '',
       involved: newExpInvolved.length > 0 ? newExpInvolved : participantsList
     };
 
@@ -406,6 +424,7 @@ function App() {
     setNewExpBudget('');
     setNewExpActual('');
     setNewExpHasTicket(false);
+    setNewExpReceipt('');
     setIsExpenseModalOpen(false);
   };
 
@@ -420,6 +439,7 @@ function App() {
     setEditExpDate(exp.date);
     setEditExpStatus(exp.status);
     setEditExpHasTicket(exp.hasTicket || false);
+    setEditExpReceipt(exp.receiptUrl || '');
     setEditExpInvolved(exp.involved && exp.involved.length > 0 ? exp.involved : participantsList);
     setIsEditModalOpen(true);
   };
@@ -447,6 +467,7 @@ function App() {
                 paidBy: editExpPaidBy,
                 date: editExpDate,
                 hasTicket: editExpHasTicket,
+                receiptUrl: editExpReceipt || '',
                 involved: editExpInvolved.length > 0 ? editExpInvolved : participantsList
               };
             }
@@ -787,13 +808,24 @@ function App() {
                           </span>
                         </td>
                         <td>
-                          <button 
-                            onClick={() => openEditExpenseModal(e)} 
-                            className="btn-action" 
-                            style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}
-                          >
-                            <Edit2 size={12} /> Edit
-                          </button>
+                          <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+                            {e.receiptUrl && (
+                              <button
+                                onClick={() => setPreviewReceiptUrl({ url: e.receiptUrl, title: e.activity })}
+                                className="btn-action"
+                                style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '4px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontWeight: '600' }}
+                              >
+                                <Receipt size={12} /> Bill
+                              </button>
+                            )}
+                            <button 
+                              onClick={() => openEditExpenseModal(e)} 
+                              className="btn-action" 
+                              style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}
+                            >
+                              <Edit2 size={12} /> Edit
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -849,8 +881,17 @@ function App() {
                         {e.status}
                       </span>
                       
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                         <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Paid by: {e.paidBy || 'Thitiwut'}</span>
+                        {e.receiptUrl && (
+                          <button
+                            onClick={() => setPreviewReceiptUrl({ url: e.receiptUrl, title: e.activity })}
+                            className="btn-action"
+                            style={{ padding: '0.3rem 0.55rem', fontSize: '0.75rem', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontWeight: '600' }}
+                          >
+                            <Receipt size={12} /> Bill
+                          </button>
+                        )}
                         <button 
                           onClick={() => openEditExpenseModal(e)} 
                           className="btn-action" 
@@ -1514,6 +1555,29 @@ function App() {
                 </div>
               </div>
 
+              <div className="form-field">
+                <label className="form-label">Attach Bill / Receipt (แนบสลิป / ใบเสร็จ)</label>
+                <input 
+                  type="file" 
+                  accept="image/*,.pdf" 
+                  onChange={(evt) => handleReceiptFileUpload(evt.target.files[0], setNewExpReceipt)} 
+                  className="form-input"
+                  style={{ fontSize: '0.8rem', padding: '0.4rem' }}
+                />
+                {newExpReceipt && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.35rem' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: '600' }}>✓ Bill Attached</span>
+                    <button 
+                      type="button" 
+                      onClick={() => setNewExpReceipt('')} 
+                      style={{ background: 'none', border: 'none', color: 'var(--danger)', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="form-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
                 <input 
                   type="checkbox" 
@@ -1646,6 +1710,29 @@ function App() {
                     </label>
                   ))}
                 </div>
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">Attach Bill / Receipt (แนบสลิป / ใบเสร็จ)</label>
+                <input 
+                  type="file" 
+                  accept="image/*,.pdf" 
+                  onChange={(evt) => handleReceiptFileUpload(evt.target.files[0], setEditExpReceipt)} 
+                  className="form-input"
+                  style={{ fontSize: '0.8rem', padding: '0.4rem' }}
+                />
+                {editExpReceipt && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.35rem' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: '600' }}>✓ Bill Attached</span>
+                    <button 
+                      type="button" 
+                      onClick={() => setEditExpReceipt('')} 
+                      style={{ background: 'none', border: 'none', color: 'var(--danger)', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="form-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
@@ -1888,6 +1975,31 @@ function App() {
                     Open / Download File <Download size={14} />
                   </a>
                 </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Bill / Receipt Image/PDF Preview Modal */}
+      {previewReceiptUrl && (
+        <div className="modal-overlay" style={{ zIndex: 350 }}>
+          <div className="glass modal-content fade-in" style={{ width: '94%', maxWidth: '750px', maxHeight: '88vh', display: 'flex', flexDirection: 'column', padding: '1rem', position: 'relative' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
+                <Receipt size={20} style={{ color: '#10b981', flexShrink: 0 }} />
+                <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-heading)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  Bill / Receipt: {previewReceiptUrl.title}
+                </h3>
+              </div>
+              <button className="modal-close" onClick={() => setPreviewReceiptUrl(null)} style={{ position: 'static', padding: '0.25rem' }}>
+                <X size={20} />
+              </button>
+            </div>
+            <div style={{ flex: 1, width: '100%', overflow: 'auto', background: '#000', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
+              {previewReceiptUrl.url.startsWith('data:application/pdf') ? (
+                <iframe src={previewReceiptUrl.url} title="Bill PDF" style={{ width: '100%', height: '550px', border: 'none' }} />
+              ) : (
+                <img src={previewReceiptUrl.url} alt="Bill / Receipt" style={{ maxWidth: '100%', maxHeight: '72vh', objectFit: 'contain' }} />
               )}
             </div>
           </div>
