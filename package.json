@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "deploy": "vercel"
+    "deploy": "vercel",
+    "deploy:firebase": "npm run build && firebase deploy --only hosting"
   },
   "dependencies": {
     "firebase": "^12.17.0",
@@ -20,6 +21,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "firebase-tools": "^15.25.1",
     "oxlint": "^1.75.0",
     "vercel": "^58.4.4",
     "vite": "^8.2.0"
