@@ -468,7 +468,7 @@ function App() {
       <header className="app-header">
         <div className="logo-container">
           <Compass className="logo-icon animate-pulse" />
-          <span className="logo-text">WanderLedger 2026</span>
+          <span className="logo-text">Travel expense tracker</span>
         </div>
 
         <nav className="nav-links">
