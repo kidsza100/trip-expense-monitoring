@@ -30,7 +30,8 @@ import {
   Sun,
   Moon,
   Eye,
-  Receipt
+  Receipt,
+  Trash2
 } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
@@ -258,6 +259,20 @@ function App() {
     }));
 
     setIsAddTicketModalOpen(false);
+  };
+
+  const handleDeleteTicket = (ticketToDelete) => {
+    if (window.confirm(`Are you sure you want to delete "${ticketToDelete.name}"?`)) {
+      setTrips(prev => prev.map(t => {
+        if (t.id === selectedTripId) {
+          return {
+            ...t,
+            tickets: (t.tickets || []).filter(item => item !== ticketToDelete && item.file !== ticketToDelete.file)
+          };
+        }
+        return t;
+      }));
+    }
   };
 
   // Form states for New Trip
@@ -1141,6 +1156,25 @@ function App() {
                           >
                             <Download size={13} /> Download
                           </a>
+                          <button
+                            onClick={() => handleDeleteTicket(t)}
+                            className="btn-action"
+                            title="Delete Ticket"
+                            style={{
+                              padding: '0.4rem 0.5rem',
+                              fontSize: '0.75rem',
+                              background: 'rgba(239, 68, 68, 0.12)',
+                              border: '1px solid rgba(239, 68, 68, 0.3)',
+                              color: '#f87171',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            <Trash2 size={13} />
+                          </button>
                         </div>
                       </div>
                     ))}
