@@ -195,6 +195,9 @@
   font-family: inherit;
   font-size: 0.95rem;
   transition: var(--transition-smooth);
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .form-input:focus {
@@ -837,10 +840,13 @@
 }
 
 .account-setup-card {
-  padding: 1rem;
+  padding: 0.85rem;
   background: rgba(255, 255, 255, 0.01);
   border-radius: 8px;
   border: 1px solid var(--border-color);
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .account-form-grid {
@@ -848,6 +854,19 @@
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
   margin-top: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .account-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .account-form-grid input {
+    grid-column: span 1 !important;
+    width: 100%;
+    box-sizing: border-box;
+  }
 }
 
 /* Modal Styling */
