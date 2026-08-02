@@ -97,7 +97,7 @@ export const initialTrips = [
       { id: 62, date: "2026-09-28", activity: "Souvenir", category: "Souvenirs", budget: 40.00, actual: 40.00, status: "pending", paidBy: "Thitiwut", hasTicket: false, involved: ["Apichanat", "Potchara", "Thitiwut", "Woraphan"] }
     ],
     tickets: [
-      { name: "Flight ticket.pdf", file: "Flight ticket.pdf", passengers: ["Thitiwut", "Woraphan"] },
+      { name: "Flight ticket - Thitiwut, Woraphan.pdf", file: "Flight ticket - Thitiwut, Woraphan.pdf", passengers: ["Thitiwut", "Woraphan"] },
       { name: "Ferry Sorrento - Amalfi.pdf", file: "Ferry Sorrento - Amalfi.pdf", passengers: ["Apichanat", "Potchara", "Thitiwut", "Woraphan"] },
       { name: "Florence S.M.N_to_Rome Termini_27_ก.ย._1759.pdf", file: "Florence S.M.N_to_Rome Termini_27_ก.ย._1759.pdf", passengers: ["Apichanat", "Potchara", "Thitiwut", "Woraphan"] },
       { name: "Galleria dell'Accademia Ticket.pdf", file: "Galleria dell'Accademia Ticket.pdf", passengers: ["Apichanat", "Potchara", "Thitiwut", "Woraphan"] },
