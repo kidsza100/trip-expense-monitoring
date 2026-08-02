@@ -984,6 +984,10 @@
     gap: 0.75rem;
   }
 
+  .form-input {
+    font-size: 16px !important;
+  }
+
   /* Responsive Mobile Expenses Cards instead of Table */
   .expenses-table-container {
     display: none; /* Hide table on mobile */

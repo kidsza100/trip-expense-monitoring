@@ -56,6 +56,7 @@ function App() {
 
   const CLOUD_URL = 'https://kvdb.io/kidsza100_italy_trip_2026_v3/trips';
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoadedFromCloud, setIsLoadedFromCloud] = useState(false);
 
   // Load from cloud on mount
   useEffect(() => {
@@ -68,9 +69,11 @@ function App() {
         if (data && Array.isArray(data) && data.length > 0) {
           setTrips(data);
         }
+        setIsLoadedFromCloud(true);
       })
       .catch(err => {
         console.log("Cloud load failed on mount, using local cache", err);
+        setIsLoadedFromCloud(true);
       });
   }, []);
 
@@ -93,6 +96,8 @@ function App() {
 
   // Save trips to localStorage and Cloud whenever they change
   useEffect(() => {
+    if (!isLoadedFromCloud) return; // Skip initial mount writes to prevent overwriting cloud data!
+    
     localStorage.setItem('monitoring_trips_v8', JSON.stringify(trips));
     
     // Save to KVDB Cloud
@@ -105,7 +110,7 @@ function App() {
     }).catch(err => {
       console.error("Cloud save failed", err);
     });
-  }, [trips]);
+  }, [trips, isLoadedFromCloud]);
 
   const [theme, setTheme] = useState(() => localStorage.getItem('app_theme') || 'light');
 
@@ -440,6 +445,22 @@ function App() {
     }));
 
     setIsEditModalOpen(false);
+  };
+
+  // Handle Delete Expense
+  const handleDeleteExpense = (expenseId) => {
+    if (window.confirm("Are you sure you want to delete this expense?")) {
+      setTrips(prev => prev.map(t => {
+        if (t.id === selectedTripId) {
+          return {
+            ...t,
+            expenses: t.expenses.filter(e => e.id !== expenseId)
+          };
+        }
+        return t;
+      }));
+      setIsEditModalOpen(false);
+    }
   };
 
   // Register New Trip
@@ -1480,7 +1501,17 @@ function App() {
                 </label>
               </div>
 
-              <button type="submit" className="btn-submit">Save Changes</button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+                <button type="submit" className="btn-submit" style={{ marginTop: 0 }}>Save Changes</button>
+                <button 
+                  type="button" 
+                  onClick={() => handleDeleteExpense(editExpId)}
+                  className="btn-submit"
+                  style={{ background: 'var(--danger)', marginTop: 0 }}
+                >
+                  Delete Expense
+                </button>
+              </div>
             </form>
           </div>
         </div>
