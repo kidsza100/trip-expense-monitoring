@@ -596,12 +596,14 @@
 }
 
 .ticket-card {
-  padding: 1.25rem;
+  padding: 1rem;
   text-align: left;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 160px;
+  height: auto;
+  min-height: 120px;
+  gap: 0.5rem;
 }
 
 .ticket-file-icon {
@@ -1000,11 +1002,11 @@
   }
 
   .mobile-expense-card {
-    padding: 1.25rem;
+    padding: 0.75rem 1rem;
     text-align: left;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.4rem;
   }
 
   .mobile-card-row {
