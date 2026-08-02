@@ -1142,6 +1142,7 @@ function App() {
           </div>
         )}
       </main>
+    </div>
 
       {/* Overlay Register Expense Modal */}
       {isExpenseModalOpen && (
@@ -1547,7 +1548,6 @@ function App() {
           </div>
         </div>
       )}
-    </div>
 
     {/* Mobile Sticky Bottom Navigation Bar (Rendered outside fade-in to stay fixed to viewport) */}
     <div className="mobile-bottom-nav">
