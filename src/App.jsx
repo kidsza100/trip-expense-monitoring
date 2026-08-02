@@ -148,6 +148,13 @@ function App() {
   const [isTripModalOpen, setIsTripModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isFamilyModalOpen, setIsFamilyModalOpen] = useState(false);
+  const [isAddTicketModalOpen, setIsAddTicketModalOpen] = useState(false);
+
+  // Add Ticket states
+  const [newTicketName, setNewTicketName] = useState('');
+  const [newTicketFile, setNewTicketFile] = useState('');
+  const [newTicketFileName, setNewTicketFileName] = useState('');
+  const [newTicketPassengers, setNewTicketPassengers] = useState([]);
 
   // Filters for Expense List
   const [expenseSearch, setExpenseSearch] = useState('');
@@ -204,6 +211,53 @@ function App() {
       callback(evt.target.result);
     };
     reader.readAsDataURL(file);
+  };
+
+  const openAddTicketModal = () => {
+    setNewTicketName('');
+    setNewTicketFile('');
+    setNewTicketFileName('');
+    setNewTicketPassengers(participantsList);
+    setIsAddTicketModalOpen(true);
+  };
+
+  const handleTicketSelectFile = (file) => {
+    if (!file) return;
+    setNewTicketFileName(file.name);
+    if (!newTicketName) {
+      setNewTicketName(file.name);
+    }
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      setNewTicketFile(evt.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAddTicketSubmit = (e) => {
+    e.preventDefault();
+    if (!newTicketName || !newTicketFile) {
+      alert("Please select a ticket file");
+      return;
+    }
+
+    const newTicketObj = {
+      name: newTicketName,
+      file: newTicketFile,
+      passengers: newTicketPassengers.length > 0 ? newTicketPassengers : participantsList
+    };
+
+    setTrips(prev => prev.map(t => {
+      if (t.id === selectedTripId) {
+        return {
+          ...t,
+          tickets: [newTicketObj, ...(t.tickets || [])]
+        };
+      }
+      return t;
+    }));
+
+    setIsAddTicketModalOpen(false);
   };
 
   // Form states for New Trip
@@ -676,9 +730,15 @@ function App() {
           </div>
 
           <div className="action-row">
-            <button className="btn-action btn-action-primary" onClick={() => setIsExpenseModalOpen(true)}>
-              <Plus size={18} /> Register Expense
-            </button>
+            {currentTab === 'tickets' ? (
+              <button className="btn-action btn-action-primary" onClick={openAddTicketModal}>
+                <Plus size={18} /> Add Ticket
+              </button>
+            ) : (
+              <button className="btn-action btn-action-primary" onClick={() => setIsExpenseModalOpen(true)}>
+                <Plus size={18} /> Register Expense
+              </button>
+            )}
           </div>
         </div>
 
@@ -1980,6 +2040,67 @@ function App() {
           </div>
         </div>
       )}
+      {/* Add Ticket Modal */}
+      {isAddTicketModalOpen && (
+        <div className="modal-overlay" style={{ zIndex: 300 }}>
+          <div className="glass modal-content fade-in">
+            <button className="modal-close" onClick={() => setIsAddTicketModalOpen(false)}>
+              <X size={20} />
+            </button>
+            <h3 className="form-title">Add Ticket</h3>
+            <form onSubmit={handleAddTicketSubmit} className="form-grid">
+              <div className="form-field">
+                <label className="form-label">Select Ticket File (PDF / EML / Image)</label>
+                <input 
+                  type="file" 
+                  accept=".pdf,.eml,image/*" 
+                  onChange={(evt) => handleTicketSelectFile(evt.target.files[0])}
+                  className="form-input"
+                  required
+                />
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">Ticket Title / Display Name</label>
+                <input 
+                  type="text" 
+                  value={newTicketName} 
+                  onChange={(e) => setNewTicketName(e.target.value)} 
+                  placeholder="e.g. Flight ticket - Rome to Bangkok" 
+                  className="form-input"
+                  required
+                />
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">Passengers (ผู้เดินทาง / ผู้ใช้ตั๋ว)</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.25rem' }}>
+                  {participantsList.map(p => (
+                    <label key={p} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85rem', cursor: 'pointer', background: 'rgba(255,255,255,0.03)', padding: '0.35rem 0.6rem', borderRadius: '6px', border: '1px solid var(--border-color)', userSelect: 'none' }}>
+                      <input 
+                        type="checkbox"
+                        checked={newTicketPassengers.includes(p)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setNewTicketPassengers(prev => [...prev, p]);
+                          } else {
+                            setNewTicketPassengers(prev => prev.filter(item => item !== p));
+                          }
+                        }}
+                        style={{ cursor: 'pointer', width: '14px', height: '14px' }}
+                      />
+                      <span>{p}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <button type="submit" className="btn-submit">Upload & Save Ticket</button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Bill / Receipt Image/PDF Preview Modal */}
       {previewReceiptUrl && (
         <div className="modal-overlay" style={{ zIndex: 350 }}>
