@@ -28,7 +28,8 @@ import {
   Ticket,
   Copy,
   Sun,
-  Moon
+  Moon,
+  Eye
 } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
@@ -54,6 +55,7 @@ function App() {
   });
 
   const [copiedId, setCopiedId] = useState(null);
+  const [previewTicket, setPreviewTicket] = useState(null);
 
   const handleCopyText = (text, id) => {
     navigator.clipboard.writeText(text);
@@ -1008,13 +1010,37 @@ function App() {
                             ))}
                           </div>
                         </div>
-                        <a 
-                          href={`/tickets/${t.file}`} 
-                          download={t.name}
-                          className="ticket-download-link"
-                        >
-                          <Download size={14} /> Download File
-                        </a>
+                        <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.75rem' }}>
+                          <button
+                            onClick={() => setPreviewTicket(t)}
+                            className="btn-action"
+                            style={{
+                              flex: 1,
+                              padding: '0.4rem 0.5rem',
+                              fontSize: '0.75rem',
+                              background: 'rgba(99, 102, 241, 0.15)',
+                              border: '1px solid rgba(99, 102, 241, 0.3)',
+                              color: '#a5b4fc',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '0.25rem',
+                              fontWeight: '600'
+                            }}
+                          >
+                            <Eye size={13} /> Preview
+                          </button>
+                          <a 
+                            href={`/tickets/${encodeURIComponent(t.file)}`} 
+                            download={t.name}
+                            className="ticket-download-link"
+                            style={{ flex: 1, textAlign: 'center', justifyContent: 'center', padding: '0.4rem 0.5rem', fontSize: '0.75rem' }}
+                          >
+                            <Download size={13} /> Download
+                          </a>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1808,6 +1834,65 @@ function App() {
         <span>Settle</span>
       </button>
     </div>
+
+      {/* Ticket Preview Modal */}
+      {previewTicket && (
+        <div className="modal-overlay" style={{ zIndex: 300 }}>
+          <div className="glass modal-content fade-in" style={{ width: '94%', maxWidth: '900px', height: '85vh', display: 'flex', flexDirection: 'column', padding: '1rem', position: 'relative' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0, flex: 1 }}>
+                <FileText size={18} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+                <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-heading)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {previewTicket.name}
+                </h3>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                <a
+                  href={`/tickets/${encodeURIComponent(previewTicket.file)}`}
+                  download={previewTicket.name}
+                  className="btn-action"
+                  style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', background: 'var(--primary)', color: '#fff', borderRadius: '6px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontWeight: '600' }}
+                >
+                  <Download size={13} /> Save File
+                </a>
+                <button 
+                  className="modal-close" 
+                  onClick={() => setPreviewTicket(null)}
+                  style={{ position: 'static', padding: '0.25rem' }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            <div style={{ flex: 1, width: '100%', background: '#fff', borderRadius: '8px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {previewTicket.file.toLowerCase().endsWith('.pdf') ? (
+                <iframe
+                  src={`/tickets/${encodeURIComponent(previewTicket.file)}`}
+                  title={previewTicket.name}
+                  style={{ width: '100%', height: '100%', border: 'none' }}
+                />
+              ) : (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#334155' }}>
+                  <FileText size={48} style={{ margin: '0 auto 1rem', color: '#6366f1' }} />
+                  <h4 style={{ margin: '0 0 0.5rem', color: '#0f172a' }}>{previewTicket.name}</h4>
+                  <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.5rem' }}>
+                    Email confirmation (.eml). Tap below to open or download.
+                  </p>
+                  <a
+                    href={`/tickets/${encodeURIComponent(previewTicket.file)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ padding: '0.6rem 1.2rem', background: '#6366f1', color: '#fff', borderRadius: '6px', textDecoration: 'none', fontWeight: '600', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                  >
+                    Open / Download File <Download size={14} />
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
