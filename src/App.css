@@ -783,8 +783,12 @@
 }
 
 .calculator-card {
-  padding: 2rem;
+  padding: 1.25rem;
   text-align: left;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .transfer-instruction-list {

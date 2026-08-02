@@ -1240,9 +1240,9 @@ function App() {
             {/* Left Column: Settlement Actions */}
             <div className="glass calculator-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
-                <div>
-                  <h2 style={{ color: 'var(--text-heading)', marginBottom: '0.25rem' }}>Reimbursement Payments</h2>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <h2 style={{ color: 'var(--text-heading)', marginBottom: '0.25rem', fontSize: '1.1rem', overflowWrap: 'break-word' }}>Reimbursement Payments</h2>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', overflowWrap: 'break-word' }}>
                     WanderLedger balances the ledger with the fewest transfers.
                   </p>
                 </div>
@@ -1268,7 +1268,7 @@ function App() {
                     const toFamLabel = tr.toFamily.startsWith('Single-') ? tr.to : tr.toFamily;
                     return (
                       <div key={idx} className="transfer-item">
-                        <div>
+                        <div style={{ minWidth: 0, flex: 1 }}>
                           <div className="transfer-actor">
                             <span style={{ fontWeight: '700', color: '#ffb088' }}>{fromFamLabel}</span>
                             <span className="transfer-arrow">pays</span>
