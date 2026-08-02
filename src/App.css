@@ -948,6 +948,8 @@
 
   .container {
     padding: 1rem;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   .trip-main-title {
