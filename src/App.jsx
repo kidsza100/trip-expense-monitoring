@@ -33,10 +33,14 @@ import './App.css';
 function App() {
   // Load trips from localStorage or use initialTrips
   const [trips, setTrips] = useState(() => {
-    const saved = localStorage.getItem('monitoring_trips_v8');
+    const saved = localStorage.getItem('monitoring_trips_v9');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Validate data has actual expenses (not wiped by failed cloud sync)
+        if (parsed && parsed[0] && parsed[0].expenses && parsed[0].expenses.length > 0) {
+          return parsed;
+        }
       } catch (e) {
         console.error("Failed to parse trips", e);
       }
@@ -54,63 +58,26 @@ function App() {
     }, 2000);
   };
 
-  const CLOUD_URL = 'https://jsonblob.com/api/jsonBlob/019fc2ef-c710-713d-92b3-dd35f9c7e812';
+  // Cloud sync placeholder - disabled until proper backend is set up
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isLoadedFromCloud, setIsLoadedFromCloud] = useState(false);
+  const [isLoadedFromCloud] = useState(true); // always true now
 
-  // Load from cloud on mount
-  useEffect(() => {
-    fetch(CLOUD_URL, { headers: { 'Accept': 'application/json' } })
-      .then(res => {
-        if (res.ok) return res.json();
-        throw new Error("No remote data");
-      })
-      .then(data => {
-        if (data && Array.isArray(data) && data.length > 0) {
-          setTrips(data);
-        }
-        setIsLoadedFromCloud(true);
-      })
-      .catch(err => {
-        console.log("Cloud load failed on mount, using local cache", err);
-        setIsLoadedFromCloud(true);
-      });
-  }, []);
-
-  const handleSyncCloud = async () => {
+  const handleSyncCloud = () => {
     setIsRefreshing(true);
-    try {
-      const res = await fetch(CLOUD_URL, { headers: { 'Accept': 'application/json' } });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && Array.isArray(data) && data.length > 0) {
-          setTrips(data);
-        }
-      }
-    } catch (err) {
-      console.error("Manual refresh failed", err);
-    } finally {
-      setTimeout(() => setIsRefreshing(false), 800);
+    // Re-load from localStorage to reflect any manual changes
+    const saved = localStorage.getItem('monitoring_trips_v9');
+    if (saved) {
+      try {
+        setTrips(JSON.parse(saved));
+      } catch(e) {}
     }
+    setTimeout(() => setIsRefreshing(false), 600);
   };
 
-  // Save trips to localStorage and Cloud whenever they change
+  // Save trips to localStorage whenever they change
   useEffect(() => {
-    if (!isLoadedFromCloud) return; // Skip initial mount writes to prevent overwriting cloud data!
-    
-    localStorage.setItem('monitoring_trips_v8', JSON.stringify(trips));
-    
-    // Save to jsonblob cloud via PUT
-    fetch(CLOUD_URL, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(trips)
-    }).catch(err => {
-      console.error("Cloud save failed", err);
-    });
+    if (!isLoadedFromCloud) return;
+    localStorage.setItem('monitoring_trips_v9', JSON.stringify(trips));
   }, [trips, isLoadedFromCloud]);
 
   const [theme, setTheme] = useState(() => localStorage.getItem('app_theme') || 'light');
