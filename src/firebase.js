@@ -9,7 +9,7 @@ const firebaseConfig = {
   messagingSenderId: "947211345000",
   appId: "1:947211345000:web:6333a458552fb2cbd42fdd",
   measurementId: "G-03YJMDEQRG",
-  databaseURL: "https://travel-app-e43a7-default-rtdb.firebaseio.com"
+  databaseURL: "https://travel-app-e43a7-default-rtdb.europe-west1.firebasedatabase.app"
 };
 
 const app = initializeApp(firebaseConfig);
