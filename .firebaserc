@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "travel-app-e43a7"
-  }
+  },
+  "targets": {
+    "travel-app-e43a7": {
+      "hosting": {
+        "main": [
+          "travel-app-e43a7"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

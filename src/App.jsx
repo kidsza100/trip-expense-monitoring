@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { initialTrips } from './data/trips';
-import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import { ref, onValue, set, get } from 'firebase/database';
-import { db, rtdb } from './firebase';
+import { rtdb } from './firebase';
 import { 
   Compass, 
   Plus, 
@@ -65,82 +64,48 @@ function App() {
   const [isLoadedFromCloud, setIsLoadedFromCloud] = useState(false);
   const isRemoteUpdate = useRef(false);
 
-  // Real-time Firebase Listener (Firestore with Realtime DB fallback)
+  // Real-time Firebase Realtime Database listener
   useEffect(() => {
-    let unsubscribertdb = null;
-    const tripDocRef = doc(db, "trips", "italy-2026");
-    
-    const unsubscribeFirestore = onSnapshot(tripDocRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const remoteData = snapshot.data();
-        if (remoteData && remoteData.trips && Array.isArray(remoteData.trips) && remoteData.trips.length > 0) {
-          isRemoteUpdate.current = true;
-          setTrips(remoteData.trips);
-        }
-      } else {
-        setDoc(tripDocRef, { trips: initialTrips }).catch(() => {});
+    const rtdbRef = ref(rtdb, 'trips/italy-2026');
+
+    const unsubscribe = onValue(rtdbRef, (snapshot) => {
+      const val = snapshot.val();
+      if (val && Array.isArray(val) && val.length > 0) {
+        isRemoteUpdate.current = true;
+        setTrips(val);
+      } else if (!snapshot.exists()) {
+        // First time: seed the database with initial trips data
+        set(rtdbRef, initialTrips).catch(() => {});
       }
       setIsLoadedFromCloud(true);
-    }, (error) => {
-      console.warn("Firestore listener fallback to Realtime DB...", error);
-      try {
-        const rtdbRef = ref(rtdb, 'trips/italy-2026');
-        unsubscribertdb = onValue(rtdbRef, (snapshot) => {
-          const val = snapshot.val();
-          if (val && Array.isArray(val) && val.length > 0) {
-            isRemoteUpdate.current = true;
-            setTrips(val);
-          } else {
-            set(rtdbRef, initialTrips).catch(() => {});
-          }
-          setIsLoadedFromCloud(true);
-        }, (rtdbErr) => {
-          console.error("RTDB error:", rtdbErr);
-          setIsLoadedFromCloud(true);
-        });
-      } catch (e) {
-        setIsLoadedFromCloud(true);
-      }
+    }, (err) => {
+      console.error('RTDB onValue error:', err);
+      setIsLoadedFromCloud(true);
     });
 
-    return () => {
-      unsubscribeFirestore();
-      if (unsubscribertdb) unsubscribertdb();
-    };
+    return () => unsubscribe();
   }, []);
 
   const handleSyncCloud = async () => {
     setIsRefreshing(true);
     try {
-      const tripDocRef = doc(db, "trips", "italy-2026");
-      const docSnap = await getDoc(tripDocRef);
-      if (docSnap.exists()) {
-        const remoteData = docSnap.data();
-        if (remoteData && remoteData.trips && Array.isArray(remoteData.trips) && remoteData.trips.length > 0) {
+      const rtdbRef = ref(rtdb, 'trips/italy-2026');
+      const snap = await get(rtdbRef);
+      if (snap.exists()) {
+        const val = snap.val();
+        if (val && Array.isArray(val) && val.length > 0) {
           isRemoteUpdate.current = true;
-          setTrips(remoteData.trips);
+          setTrips(val);
         }
       }
     } catch (err) {
-      try {
-        const rtdbRef = ref(rtdb, 'trips/italy-2026');
-        const snap = await get(rtdbRef);
-        if (snap.exists()) {
-          const val = snap.val();
-          if (val && Array.isArray(val) && val.length > 0) {
-            isRemoteUpdate.current = true;
-            setTrips(val);
-          }
-        }
-      } catch (rtdbErr) {
-        console.error("Manual Firebase sync error:", rtdbErr);
-      }
+      console.error('Manual RTDB sync error:', err);
     } finally {
       setTimeout(() => setIsRefreshing(false), 600);
     }
   };
 
-  // Save trips to localStorage & Firebase (Firestore + RTDB fallback)
+  // Save trips to localStorage & Firebase Realtime Database
   useEffect(() => {
     if (!isLoadedFromCloud) return;
 
@@ -151,13 +116,8 @@ function App() {
       return;
     }
 
-    const tripDocRef = doc(db, "trips", "italy-2026");
-    setDoc(tripDocRef, { trips: trips }, { merge: true })
-      .catch(() => {
-        try {
-          set(ref(rtdb, 'trips/italy-2026'), trips).catch(() => {});
-        } catch (e) {}
-      });
+    const rtdbRef = ref(rtdb, 'trips/italy-2026');
+    set(rtdbRef, trips).catch((err) => console.error('RTDB write error:', err));
   }, [trips, isLoadedFromCloud]);
 
   const [theme, setTheme] = useState(() => localStorage.getItem('app_theme') || 'light');

@@ -9,7 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "deploy": "vercel",
-    "deploy:firebase": "npm run build && firebase deploy --only hosting,firestore:rules"
+    "deploy:firebase": "npm run build && npx firebase-tools deploy --only hosting"
   },
   "dependencies": {
     "firebase": "^12.17.0",
