@@ -1165,7 +1165,7 @@ function App() {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-row-grid">
                 <div className="form-field">
                   <label className="form-label">Category</label>
                   <select 
@@ -1199,7 +1199,7 @@ function App() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-row-grid">
                 <div className="form-field">
                   <label className="form-label">Planned Budget (€)</label>
                   <input 
@@ -1301,7 +1301,7 @@ function App() {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-row-grid">
                 <div className="form-field">
                   <label className="form-label">Category</label>
                   <select 
@@ -1335,7 +1335,7 @@ function App() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-row-grid">
                 <div className="form-field">
                   <label className="form-label">Planned Budget (€)</label>
                   <input 
