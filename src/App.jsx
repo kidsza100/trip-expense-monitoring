@@ -11,7 +11,7 @@ import {
   FileText, 
   Folder, 
   FolderOpen, 
-  Map, 
+  CalendarDays,
   PieChart, 
   RefreshCw, 
   Download, 
@@ -30,6 +30,9 @@ import {
   Sun,
   Moon
 } from 'lucide-react';
+import 'leaflet/dist/leaflet.css';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import './App.css';
 
 function App() {
@@ -560,7 +563,7 @@ function App() {
             <FileText size={16} /> Tickets
           </button>
           <button className={`nav-btn ${currentTab === 'map' ? 'active' : ''}`} onClick={() => setCurrentTab('map')}>
-            <Map size={16} /> Map Route
+            <CalendarDays size={16} /> Itinerary
           </button>
           <button className={`nav-btn ${currentTab === 'split' ? 'active' : ''}`} onClick={() => setCurrentTab('split')}>
             <RefreshCw size={16} /> Settle Debts
@@ -1025,89 +1028,211 @@ function App() {
           </div>
         )}
 
-        {/* Map Route representation */}
-        {currentTab === 'map' && (
-          <div className="glass map-card fade-in">
-            <h2 style={{ color: 'var(--text-heading)', marginBottom: '1rem' }}>Trip Geographical Milestones</h2>
-            <div className="map-container">
-              
-              {/* Left Panel: SVG Map visual route */}
-              <div className="map-svg-col">
-                <svg className="map-svg" viewBox="0 0 300 500">
-                  <path 
-                    d="M50 80 Q90 90 120 70 T160 50 T220 50 T240 70 L240 100 Q190 120 180 160 T190 230 T220 280 T260 310 L280 340 L260 380 L230 350 L200 400 L180 430 L160 480 L140 480 L145 440 L160 410 Q140 370 130 350 T130 280 T150 200 Q120 180 90 180 T70 140 T50 80 Z" 
-                    fill="#1e293b" 
-                    stroke="rgba(255,255,255,0.1)" 
-                    strokeWidth="1.5"
+        {/* Itinerary Tab */}
+        {currentTab === 'map' && (() => {
+          // Fix Leaflet default icon
+          delete L.Icon.Default.prototype._getIconUrl;
+          L.Icon.Default.mergeOptions({
+            iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+          });
+
+          const itineraryDays = [
+            {
+              day: 'Day 1', date: 'Fri 19 Sep', city: 'Naples 🇮🇹', emoji: '✈️',
+              lat: 40.8518, lng: 14.2681,
+              activities: [
+                { time: '06:00', label: 'Depart Bangkok → Frankfurt → Naples (U24278)' },
+                { time: '18:00', label: 'Arrive Naples Airport (NAP)' },
+                { time: '19:30', label: 'Check-in Naples hotel' },
+                { time: '20:30', label: 'Dinner in Naples centro storico' },
+              ]
+            },
+            {
+              day: 'Day 2', date: 'Sat 20 Sep', city: 'Sorrento 🌊', emoji: '🚂',
+              lat: 40.6263, lng: 14.3757,
+              activities: [
+                { time: '09:00', label: 'Campania Express train Naples → Sorrento' },
+                { time: '11:00', label: 'Check-in Sorrento Airbnb (€769.56)' },
+                { time: '14:00', label: 'Explore Sorrento cliffs & old town' },
+                { time: '19:00', label: 'Dinner with sea view at Villa Comunale' },
+              ]
+            },
+            {
+              day: 'Day 3', date: 'Sun 21 Sep', city: 'Amalfi Coast 🚤', emoji: '⛴️',
+              lat: 40.6340, lng: 14.6027,
+              activities: [
+                { time: '09:00', label: 'Ferry from Sorrento → Amalfi (€104 total)' },
+                { time: '11:00', label: 'Walk Amalfi old town & Duomo di Amalfi' },
+                { time: '14:00', label: 'Ferry → Positano — gelato & beach' },
+                { time: '17:00', label: 'Bus back to Sorrento' },
+              ]
+            },
+            {
+              day: 'Day 4', date: 'Mon 22 Sep', city: 'Pompeii → Rome 🏛️', emoji: '🏺',
+              lat: 40.7462, lng: 13.9036,
+              activities: [
+                { time: '08:00', label: 'Morning checkout Sorrento' },
+                { time: '09:30', label: 'Train to Pompeii — explore ruins (€80)' },
+                { time: '14:00', label: 'Metropolitano train to Naples Centrale' },
+                { time: '16:00', label: 'Italo train Naples → Rome Termini' },
+                { time: '18:30', label: 'Check-in Rome hotel (€817.07)' },
+              ]
+            },
+            {
+              day: 'Day 5', date: 'Tue 23 Sep', city: 'Rome — Vatican 🙏', emoji: '⛪',
+              lat: 41.9029, lng: 12.4534,
+              activities: [
+                { time: '08:30', label: 'Vatican Museums & Sistine Chapel' },
+                { time: '12:00', label: "St. Peter's Basilica & Square" },
+                { time: '15:00', label: "Castel Sant'Angelo walk" },
+                { time: '19:30', label: 'Dinner near Piazza Navona' },
+              ]
+            },
+            {
+              day: 'Day 6', date: 'Wed 24 Sep', city: 'Rome — Colosseum 🏟️', emoji: '🗿',
+              lat: 41.8902, lng: 12.4922,
+              activities: [
+                { time: '09:00', label: 'Colosseum & Roman Forum & Palatine Hill' },
+                { time: '13:00', label: 'Lunch at Testaccio market' },
+                { time: '15:00', label: 'Trevi Fountain & Spanish Steps' },
+                { time: '20:00', label: 'Dinner: Roman pasta & tiramisu' },
+              ]
+            },
+            {
+              day: 'Day 7', date: 'Thu 25 Sep', city: 'Florence 🌸', emoji: '🚄',
+              lat: 43.7696, lng: 11.2558,
+              activities: [
+                { time: '08:00', label: 'Checkout Rome hotel' },
+                { time: '09:30', label: 'Frecciarossa train Rome → Florence (1h30m)' },
+                { time: '11:30', label: 'Check-in Florence Airbnb (€494.18)' },
+                { time: '14:00', label: 'Uffizi Gallery walk & Piazzale Michelangelo' },
+                { time: '20:00', label: 'Florentine steak dinner (€220)' },
+              ]
+            },
+            {
+              day: 'Day 8', date: 'Fri 26 Sep', city: 'Florence — Art 🎨', emoji: '🖼️',
+              lat: 43.7769, lng: 11.2600,
+              activities: [
+                { time: '09:00', label: 'Accademia Gallery — David by Michelangelo (€96)' },
+                { time: '12:00', label: 'Mercato Centrale lunch' },
+                { time: '14:00', label: 'Ponte Vecchio & Oltrarno neighbourhood' },
+                { time: '19:30', label: 'Dinner + Aperol Spritz at local trattoria' },
+              ]
+            },
+            {
+              day: 'Day 9', date: 'Sat 27 Sep', city: 'Florence → Rome 🏁', emoji: '🛍️',
+              lat: 41.9028, lng: 12.4964,
+              activities: [
+                { time: '09:00', label: 'Last Florence sightseeing & shopping' },
+                { time: '13:00', label: 'Frecciarossa train Florence → Rome' },
+                { time: '15:00', label: 'Souvenir shopping Rome (€40)' },
+                { time: '19:00', label: 'Final dinner near Termini' },
+              ]
+            },
+            {
+              day: 'Day 10', date: 'Sun 28 Sep', city: 'Fly Home ✈️', emoji: '🏠',
+              lat: 41.7999, lng: 12.2462,
+              activities: [
+                { time: '05:00', label: 'Hotel checkout' },
+                { time: '06:30', label: 'Transfer to Fiumicino Airport (FCO)' },
+                { time: '09:00', label: 'EasyJet flight Rome → Frankfurt/Munich' },
+                { time: '20:00', label: 'Connect Bangkok flight home 🏠' },
+              ]
+            },
+          ];
+
+          const routePositions = itineraryDays.map(d => [d.lat, d.lng]);
+          const customIcon = (active) => L.divIcon({
+            className: '',
+            html: `<div style="width:${active?20:14}px;height:${active?20:14}px;background:${active?'#ef4444':'#6366f1'};border:2px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.4);transition:all 0.2s"></div>`,
+            iconSize: [active?20:14, active?20:14],
+            iconAnchor: [active?10:7, active?10:7],
+          });
+
+          return (
+            <div className="fade-in" style={{ paddingBottom: '5rem' }}>
+              {/* Real Leaflet Map */}
+              <div className="glass" style={{ borderRadius: '1.25rem', overflow: 'hidden', marginBottom: '1.5rem' }}>
+                <div style={{ padding: '1rem 1.25rem 0.5rem' }}>
+                  <h2 style={{ color: 'var(--text-heading)', margin: 0, fontSize: '1.2rem' }}>🗺️ Italy Trip Route</h2>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: '0.25rem 0 0' }}>Pinch to zoom • Tap markers for details</p>
+                </div>
+                <MapContainer
+                  center={[42.0, 13.5]}
+                  zoom={6}
+                  style={{ height: '380px', width: '100%' }}
+                  scrollWheelZoom={true}
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-                  
-                  <path 
-                    d={`M ${mapNodes.map(node => `${node.x} ${node.y}`).join(' L ')}`} 
-                    className="map-route-line"
+                  <Polyline
+                    positions={routePositions}
+                    pathOptions={{ color: '#6366f1', weight: 3, dashArray: '8 6', opacity: 0.85 }}
                   />
-                  
-                  {mapNodes.map((node, index) => (
-                    <g 
-                      key={index} 
-                      className="map-pin" 
-                      onClick={() => setSelectedMapNode(index)}
+                  {itineraryDays.map((d, i) => (
+                    <Marker
+                      key={i}
+                      position={[d.lat, d.lng]}
+                      icon={customIcon(selectedMapNode === i)}
+                      eventHandlers={{ click: () => setSelectedMapNode(i) }}
                     >
-                      <circle 
-                        cx={node.x} 
-                        cy={node.y} 
-                        r={selectedMapNode === index ? 8 : 5} 
-                        fill={selectedMapNode === index ? "#ef4444" : "#6366f1"}
-                        className={selectedMapNode === index ? "animate-pulse" : ""}
-                      />
-                      <text 
-                        x={node.x + 8} 
-                        y={node.y + 4} 
-                        fill={selectedMapNode === index ? "#fff" : "var(--text-muted)"}
-                        fontSize={selectedMapNode === index ? "8" : "6"}
-                        fontWeight={selectedMapNode === index ? "700" : "500"}
-                      >
-                        {node.city}
-                      </text>
-                    </g>
+                      <Popup>
+                        <strong>{d.day}: {d.city}</strong><br />{d.date}
+                      </Popup>
+                    </Marker>
                   ))}
-                </svg>
+                </MapContainer>
               </div>
 
-              {/* Right Panel: Selected node details */}
-              <div className="map-info-col">
-                <div className="map-info-title">{mapNodes[selectedMapNode].city}</div>
-                <div className="map-info-sub">Itinerary Date: {mapNodes[selectedMapNode].date}</div>
-                <div className="participant-chip" style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#a5b4fc', border: '1px solid rgba(99, 102, 241, 0.2)', marginBottom: '1.5rem', display: 'inline-block' }}>
-                  {mapNodes[selectedMapNode].desc}
-                </div>
-                
-                <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
-                  <h4 style={{ color: 'var(--text-heading)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Itinerary Logistics & Budgets</h4>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-                    {mapNodes[selectedMapNode].notes}
-                  </p>
-                </div>
-
-                <div style={{ marginTop: '2rem' }}>
-                  <div className="sidebar-title" style={{ paddingLeft: 0 }}>Route Stops Overview</div>
-                  <div className="map-timeline">
-                    {mapNodes.map((node, index) => (
-                      <div 
-                        key={index} 
-                        className={`timeline-node ${selectedMapNode === index ? 'active' : ''}`}
-                        onClick={() => setSelectedMapNode(index)}
-                      >
-                        <span className="timeline-bullet"></span>
-                        <div className="timeline-place">{node.city}</div>
-                        <div className="timeline-details">{node.date} • {node.desc}</div>
+              {/* Day-by-Day Itinerary Cards */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {itineraryDays.map((d, i) => (
+                  <div
+                    key={i}
+                    className="glass"
+                    onClick={() => setSelectedMapNode(i)}
+                    style={{
+                      borderRadius: '1rem',
+                      padding: '1rem 1.25rem',
+                      cursor: 'pointer',
+                      border: selectedMapNode === i ? '1.5px solid #6366f1' : '1.5px solid transparent',
+                      background: selectedMapNode === i ? 'rgba(99,102,241,0.08)' : undefined,
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                      <div style={{
+                        width: 38, height: 38, borderRadius: '0.6rem',
+                        background: selectedMapNode === i ? '#6366f1' : 'var(--bg-card-alt)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '1.2rem', flexShrink: 0
+                      }}>{d.emoji}</div>
+                      <div>
+                        <div style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.95rem' }}>{d.day} — {d.city}</div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{d.date}</div>
                       </div>
-                    ))}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      {d.activities.map((act, j) => (
+                        <div key={j} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                          <span style={{
+                            fontSize: '0.72rem', color: '#a5b4fc', fontWeight: 600,
+                            minWidth: 40, paddingTop: '0.1rem', fontFamily: 'monospace'
+                          }}>{act.time}</span>
+                          <span style={{ fontSize: '0.83rem', color: 'var(--text-body)', lineHeight: 1.45 }}>{act.label}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Debt settlement calculator panel */}
         {currentTab === 'split' && (
@@ -1674,8 +1799,8 @@ function App() {
         <span>Tickets</span>
       </button>
       <button className={`mobile-nav-btn ${currentTab === 'map' ? 'active' : ''}`} onClick={() => setCurrentTab('map')}>
-        <Map size={20} />
-        <span>Map</span>
+        <CalendarDays size={20} />
+        <span>Itinerary</span>
       </button>
       <button className={`mobile-nav-btn ${currentTab === 'split' ? 'active' : ''}`} onClick={() => setCurrentTab('split')}>
         <RefreshCw size={20} />
