@@ -54,13 +54,13 @@ function App() {
     }, 2000);
   };
 
-  const CLOUD_URL = 'https://kvdb.io/kidsza100_italy_trip_2026_v3/trips';
+  const CLOUD_URL = 'https://jsonblob.com/api/jsonBlob/019fc2ef-c710-713d-92b3-dd35f9c7e812';
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoadedFromCloud, setIsLoadedFromCloud] = useState(false);
 
   // Load from cloud on mount
   useEffect(() => {
-    fetch(CLOUD_URL)
+    fetch(CLOUD_URL, { headers: { 'Accept': 'application/json' } })
       .then(res => {
         if (res.ok) return res.json();
         throw new Error("No remote data");
@@ -80,7 +80,7 @@ function App() {
   const handleSyncCloud = async () => {
     setIsRefreshing(true);
     try {
-      const res = await fetch(CLOUD_URL);
+      const res = await fetch(CLOUD_URL, { headers: { 'Accept': 'application/json' } });
       if (res.ok) {
         const data = await res.json();
         if (data && Array.isArray(data) && data.length > 0) {
@@ -100,11 +100,12 @@ function App() {
     
     localStorage.setItem('monitoring_trips_v8', JSON.stringify(trips));
     
-    // Save to KVDB Cloud
+    // Save to jsonblob cloud via PUT
     fetch(CLOUD_URL, {
-      method: 'POST',
+      method: 'PUT',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
       body: JSON.stringify(trips)
     }).catch(err => {
