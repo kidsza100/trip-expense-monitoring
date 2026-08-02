@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { initialTrips } from './data/trips';
 import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
-import { db } from './firebase';
+import { ref, onValue, set, get } from 'firebase/database';
+import { db, rtdb } from './firebase';
 import { 
   Compass, 
   Plus, 
@@ -64,11 +65,12 @@ function App() {
   const [isLoadedFromCloud, setIsLoadedFromCloud] = useState(false);
   const isRemoteUpdate = useRef(false);
 
-  // Real-time Firebase Firestore Listener
+  // Real-time Firebase Listener (Firestore with Realtime DB fallback)
   useEffect(() => {
+    let unsubscribertdb = null;
     const tripDocRef = doc(db, "trips", "italy-2026");
     
-    const unsubscribe = onSnapshot(tripDocRef, (snapshot) => {
+    const unsubscribeFirestore = onSnapshot(tripDocRef, (snapshot) => {
       if (snapshot.exists()) {
         const remoteData = snapshot.data();
         if (remoteData && remoteData.trips && Array.isArray(remoteData.trips) && remoteData.trips.length > 0) {
@@ -76,16 +78,35 @@ function App() {
           setTrips(remoteData.trips);
         }
       } else {
-        // Seed initial trips if Firestore document doesn't exist yet
-        setDoc(tripDocRef, { trips: initialTrips });
+        setDoc(tripDocRef, { trips: initialTrips }).catch(() => {});
       }
       setIsLoadedFromCloud(true);
     }, (error) => {
-      console.error("Firebase Firestore sync error:", error);
-      setIsLoadedFromCloud(true);
+      console.warn("Firestore listener fallback to Realtime DB...", error);
+      try {
+        const rtdbRef = ref(rtdb, 'trips/italy-2026');
+        unsubscribertdb = onValue(rtdbRef, (snapshot) => {
+          const val = snapshot.val();
+          if (val && Array.isArray(val) && val.length > 0) {
+            isRemoteUpdate.current = true;
+            setTrips(val);
+          } else {
+            set(rtdbRef, initialTrips).catch(() => {});
+          }
+          setIsLoadedFromCloud(true);
+        }, (rtdbErr) => {
+          console.error("RTDB error:", rtdbErr);
+          setIsLoadedFromCloud(true);
+        });
+      } catch (e) {
+        setIsLoadedFromCloud(true);
+      }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeFirestore();
+      if (unsubscribertdb) unsubscribertdb();
+    };
   }, []);
 
   const handleSyncCloud = async () => {
@@ -101,13 +122,25 @@ function App() {
         }
       }
     } catch (err) {
-      console.error("Manual Firebase sync error:", err);
+      try {
+        const rtdbRef = ref(rtdb, 'trips/italy-2026');
+        const snap = await get(rtdbRef);
+        if (snap.exists()) {
+          const val = snap.val();
+          if (val && Array.isArray(val) && val.length > 0) {
+            isRemoteUpdate.current = true;
+            setTrips(val);
+          }
+        }
+      } catch (rtdbErr) {
+        console.error("Manual Firebase sync error:", rtdbErr);
+      }
     } finally {
       setTimeout(() => setIsRefreshing(false), 600);
     }
   };
 
-  // Save trips to localStorage & Firebase Firestore whenever they change
+  // Save trips to localStorage & Firebase (Firestore + RTDB fallback)
   useEffect(() => {
     if (!isLoadedFromCloud) return;
 
@@ -120,7 +153,11 @@ function App() {
 
     const tripDocRef = doc(db, "trips", "italy-2026");
     setDoc(tripDocRef, { trips: trips }, { merge: true })
-      .catch((err) => console.error("Firebase write error:", err));
+      .catch(() => {
+        try {
+          set(ref(rtdb, 'trips/italy-2026'), trips).catch(() => {});
+        } catch (e) {}
+      });
   }, [trips, isLoadedFromCloud]);
 
   const [theme, setTheme] = useState(() => localStorage.getItem('app_theme') || 'light');
