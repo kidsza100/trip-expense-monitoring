@@ -1352,11 +1352,12 @@ function App() {
                         />
                         <input 
                           type="text" 
-                          placeholder="Family Group (e.g. Family A)" 
-                          value={acc?.family || ''} 
-                          onChange={(e) => handleUpdateBankDetails(p, 'family', e.target.value)}
+                          readOnly
+                          placeholder="Family Group (Organize via button above)" 
+                          value={acc?.family ? `Family: ${acc.family}` : 'No Family Group'} 
                           className="form-input"
-                          style={{ fontSize: '0.8rem', padding: '0.4rem', gridColumn: 'span 2', borderLeft: '3px solid var(--warning)' }}
+                          title="Change family assignment using the 'Organize Families' button above"
+                          style={{ fontSize: '0.8rem', padding: '0.4rem', gridColumn: 'span 2', borderLeft: '3px solid var(--warning)', opacity: 0.75, cursor: 'not-allowed', background: 'rgba(255, 255, 255, 0.04)' }}
                         />
                       </div>
                     </div>
