@@ -886,6 +886,7 @@
     margin-top: 0.75rem;
     padding: 1.25rem 1rem;
     width: 96%;
+    max-width: 400px;
     max-height: 85vh;
   }
 
