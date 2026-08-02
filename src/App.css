@@ -877,6 +877,18 @@
     padding-bottom: 80px; /* Safe padding for bottom navigation */
   }
 
+  .modal-overlay {
+    align-items: flex-start;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .modal-content {
+    margin-top: 0.75rem;
+    padding: 1.25rem 1rem;
+    width: 96%;
+    max-height: 85vh;
+  }
+
   .app-header {
     padding: 1rem;
     position: relative;
