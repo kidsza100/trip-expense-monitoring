@@ -463,7 +463,8 @@ function App() {
   });
 
   return (
-    <div className="fade-in">
+    <>
+      <div className="fade-in">
       {/* Top sticky header navigation for desktop */}
       <header className="app-header">
         <div className="logo-container">
@@ -533,29 +534,7 @@ function App() {
         </div>
       </header>
 
-      {/* Mobile Sticky Bottom Navigation Bar */}
-      <div className="mobile-bottom-nav">
-        <button className={`mobile-nav-btn ${currentTab === 'dashboard' ? 'active' : ''}`} onClick={() => setCurrentTab('dashboard')}>
-          <PieChart size={20} />
-          <span>Dashboard</span>
-        </button>
-        <button className={`mobile-nav-btn ${currentTab === 'expenses' ? 'active' : ''}`} onClick={() => setCurrentTab('expenses')}>
-          <DollarSign size={20} />
-          <span>Expenses</span>
-        </button>
-        <button className={`mobile-nav-btn ${currentTab === 'tickets' ? 'active' : ''}`} onClick={() => setCurrentTab('tickets')}>
-          <FileText size={20} />
-          <span>Tickets</span>
-        </button>
-        <button className={`mobile-nav-btn ${currentTab === 'map' ? 'active' : ''}`} onClick={() => setCurrentTab('map')}>
-          <Map size={20} />
-          <span>Map</span>
-        </button>
-        <button className={`mobile-nav-btn ${currentTab === 'split' ? 'active' : ''}`} onClick={() => setCurrentTab('split')}>
-          <RefreshCw size={20} />
-          <span>Settle</span>
-        </button>
-      </div>
+      {/* Mobile Sticky Bottom Navigation Bar has been relocated outside the fade-in wrapper to fix CSS viewport containment */}
 
       <main className="container">
         {/* Trip Title and Summary Section */}
@@ -1569,6 +1548,31 @@ function App() {
         </div>
       )}
     </div>
+
+    {/* Mobile Sticky Bottom Navigation Bar (Rendered outside fade-in to stay fixed to viewport) */}
+    <div className="mobile-bottom-nav">
+      <button className={`mobile-nav-btn ${currentTab === 'dashboard' ? 'active' : ''}`} onClick={() => setCurrentTab('dashboard')}>
+        <PieChart size={20} />
+        <span>Dashboard</span>
+      </button>
+      <button className={`mobile-nav-btn ${currentTab === 'expenses' ? 'active' : ''}`} onClick={() => setCurrentTab('expenses')}>
+        <DollarSign size={20} />
+        <span>Expenses</span>
+      </button>
+      <button className={`mobile-nav-btn ${currentTab === 'tickets' ? 'active' : ''}`} onClick={() => setCurrentTab('tickets')}>
+        <FileText size={20} />
+        <span>Tickets</span>
+      </button>
+      <button className={`mobile-nav-btn ${currentTab === 'map' ? 'active' : ''}`} onClick={() => setCurrentTab('map')}>
+        <Map size={20} />
+        <span>Map</span>
+      </button>
+      <button className={`mobile-nav-btn ${currentTab === 'split' ? 'active' : ''}`} onClick={() => setCurrentTab('split')}>
+        <RefreshCw size={20} />
+        <span>Settle</span>
+      </button>
+    </div>
+    </>
   );
 }
 
