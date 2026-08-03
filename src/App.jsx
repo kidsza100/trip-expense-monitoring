@@ -35,7 +35,8 @@ import {
   ChevronDown,
   ChevronUp,
   Calculator,
-  Info
+  Info,
+  BarChart2
 } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
@@ -1044,33 +1045,130 @@ function App() {
               </div>
             </div>
 
+            {/* Planned vs Actual Comparison Bar Graph */}
+            <div className="glass chart-card" style={{ marginTop: '1.25rem', padding: '1.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div className="chart-title" style={{ margin: 0 }}>
+                  <BarChart2 size={18} style={{ color: 'var(--primary)' }} /> Budget Comparison: Planned vs Actual Paid
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  Savings / Remaining: <span style={{ fontWeight: '700', color: totalPlannedBudget - totalActualCost >= 0 ? 'var(--success)' : 'var(--danger)' }}>€{(totalPlannedBudget - totalActualCost).toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Comparison Visual Bars */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.35rem' }}>
+                    <span style={{ fontWeight: '600', color: 'var(--text-heading)' }}>📋 Planned Budget (งบที่วางไว้)</span>
+                    <span style={{ fontWeight: '700', color: 'var(--text-heading)' }}>€{totalPlannedBudget.toFixed(2)}</span>
+                  </div>
+                  <div className="progress-bar-bg" style={{ height: '12px', background: 'rgba(255,255,255,0.06)' }}>
+                    <div className="progress-bar-fill" style={{ width: '100%', backgroundColor: '#6366f1' }}></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.35rem' }}>
+                    <span style={{ fontWeight: '600', color: 'var(--text-heading)' }}>💳 Actual Paid vs Savings (จ่ายจริง vs เงินคงเหลือ)</span>
+                    <span style={{ fontWeight: '700', color: 'var(--text-heading)' }}>€{totalActualCost.toFixed(2)} / €{totalPlannedBudget.toFixed(2)}</span>
+                  </div>
+                  <div className="progress-bar-bg" style={{ height: '12px', display: 'flex', overflow: 'hidden', background: 'rgba(255,255,255,0.06)', borderRadius: '99px' }}>
+                    <div 
+                      style={{ 
+                        width: `${totalPlannedBudget > 0 ? Math.min((totalActualCost / totalPlannedBudget) * 100, 100) : 0}%`, 
+                        backgroundColor: '#10b981', 
+                        height: '100%', 
+                        transition: 'width 1s ease' 
+                      }} 
+                      title={`Actual Paid: €${totalActualCost.toFixed(2)}`}
+                    />
+                    <div 
+                      style={{ 
+                        width: `${totalPlannedBudget > 0 ? Math.max(((totalPlannedBudget - totalActualCost) / totalPlannedBudget) * 100, 0) : 0}%`, 
+                        backgroundColor: '#fbbf24', 
+                        height: '100%', 
+                        transition: 'width 1s ease' 
+                      }} 
+                      title={`Savings / Remaining: €${(totalPlannedBudget - totalActualCost).toFixed(2)}`}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: '1.25rem', marginTop: '0.5rem', fontSize: '0.78rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
+                      <span style={{ color: 'var(--text-main)' }}>Actual Paid: <strong style={{ color: 'var(--text-heading)' }}>€{totalActualCost.toFixed(2)}</strong> ({totalPlannedBudget > 0 ? ((totalActualCost / totalPlannedBudget) * 100).toFixed(0) : 0}%)</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#fbbf24', display: 'inline-block' }}></span>
+                      <span style={{ color: 'var(--text-main)' }}>Savings / Remaining: <strong style={{ color: 'var(--success)' }}>€{(totalPlannedBudget - totalActualCost).toFixed(2)}</strong> ({totalPlannedBudget > 0 ? (((totalPlannedBudget - totalActualCost) / totalPlannedBudget) * 100).toFixed(0) : 0}%)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Visual breakdown graphs */}
-            <div className="analytics-section">
+            <div className="analytics-section" style={{ marginTop: '1.25rem' }}>
               <div className="glass chart-card">
                 <div className="chart-title">
                   <PieChart size={18} style={{ color: 'var(--primary)' }} /> Category Spending Breakdown
                 </div>
-                <div className="category-list">
-                  {categoryStats.map(stat => {
-                    const percentage = totalActualCost > 0 ? (stat.actual / totalActualCost) * 100 : 0;
-                    return (
-                      <div key={stat.name} className="category-item">
-                        <div className="category-info">
-                          <span className="category-color-dot" style={{ backgroundColor: stat.color }}></span>
-                          <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>{stat.name}</span>
-                        </div>
-                        <div className="category-bar-wrapper">
-                          <div className="progress-bar-bg" style={{ height: '6px' }}>
-                            <div className="progress-bar-fill" style={{ width: `${percentage}%`, backgroundColor: stat.color }}></div>
+                
+                {/* Donut Circle Pie Chart */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', padding: '1rem 0' }}>
+                  <div style={{ position: 'relative', width: '170px', height: '170px', flexShrink: 0 }}>
+                    <svg viewBox="0 0 42 42" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+                      <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="rgba(255,255,255,0.05)" strokeWidth="4.5" />
+                      {(() => {
+                        let accumulated = 0;
+                        return categoryStats
+                          .filter(c => c.actual > 0)
+                          .map((seg, idx) => {
+                            const percent = totalActualCost > 0 ? (seg.actual / totalActualCost) * 100 : 0;
+                            const strokeDasharray = `${percent} ${100 - percent}`;
+                            const strokeDashoffset = 25 - accumulated;
+                            accumulated += percent;
+                            return (
+                              <circle
+                                key={idx}
+                                cx="21"
+                                cy="21"
+                                r="15.91549430918954"
+                                fill="transparent"
+                                stroke={seg.color}
+                                strokeWidth="4.5"
+                                strokeDasharray={strokeDasharray}
+                                strokeDashoffset={strokeDashoffset}
+                                style={{ transition: 'stroke-dasharray 0.8s ease' }}
+                              />
+                            );
+                          });
+                      })()}
+                    </svg>
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Total Spent</span>
+                      <span style={{ fontSize: '0.95rem', fontWeight: '800', color: 'var(--text-heading)' }}>€{totalActualCost.toFixed(0)}</span>
+                    </div>
+                  </div>
+
+                  {/* Legend list */}
+                  <div style={{ flex: 1, minWidth: '170px', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                    {categoryStats.map(cat => {
+                      const percent = totalActualCost > 0 ? (cat.actual / totalActualCost) * 100 : 0;
+                      return (
+                        <div key={cat.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                            <span style={{ width: '9px', height: '9px', borderRadius: '50%', backgroundColor: cat.color, display: 'inline-block', flexShrink: 0 }}></span>
+                            <span style={{ color: 'var(--text-heading)', fontWeight: '500' }}>{cat.name}</span>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontWeight: '600', color: 'var(--text-heading)' }}>€{cat.actual.toFixed(2)}</span>
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginLeft: '0.35rem' }}>({percent.toFixed(0)}%)</span>
                           </div>
                         </div>
-                        <div style={{ textAlign: 'right', fontSize: '0.85rem' }}>
-                          <span style={{ fontWeight: '600', color: 'var(--text-heading)' }}>€{stat.actual.toFixed(2)}</span>
-                          <span style={{ color: 'var(--text-muted)', marginLeft: '0.5rem', fontSize: '0.75rem' }}>({percentage.toFixed(0)}%)</span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
