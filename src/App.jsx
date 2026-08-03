@@ -64,6 +64,7 @@ function App() {
   const [previewTicket, setPreviewTicket] = useState(null);
   const [previewReceiptUrl, setPreviewReceiptUrl] = useState(null);
   const [showCalcDetail, setShowCalcDetail] = useState(false);
+  const [expandedPayerDetail, setExpandedPayerDetail] = useState(null);
   const [editingAccountParticipant, setEditingAccountParticipant] = useState(null);
   const [tempBankName, setTempBankName] = useState('');
   const [tempAccountNumber, setTempAccountNumber] = useState('');
@@ -1517,19 +1518,89 @@ function App() {
                         1. สรุปยอดจ่ายจริงและค่าใช้จ่ายรายคน (Individual Outlay & Share)
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                        {balances.map(b => (
-                          <div key={b.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.35rem 0.5rem', background: 'rgba(0,0,0,0.1)', borderRadius: '6px' }}>
-                            <div>
-                              <span style={{ fontWeight: '600', color: 'var(--text-heading)' }}>{b.name}</span>
-                              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                                จ่ายออกจริง: €{b.paid.toFixed(2)} | ส่วนหารที่ต้องรับผิดชอบ: €{b.share.toFixed(2)}
+                        {balances.map(b => {
+                          const isExpanded = expandedPayerDetail === b.name;
+                          const paidItems = activeTrip.expenses.filter(e => e.paidBy === b.name && e.status === 'paid');
+                          const shareItems = activeTrip.expenses.filter(e => {
+                            const involved = e.involved && e.involved.length > 0 ? e.involved : participantsList;
+                            return involved.includes(b.name) && e.status === 'paid';
+                          });
+
+                          return (
+                            <div key={b.name} style={{ background: 'rgba(0,0,0,0.1)', borderRadius: '6px', overflow: 'hidden' }}>
+                              <div 
+                                onClick={() => setExpandedPayerDetail(isExpanded ? null : b.name)}
+                                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.45rem 0.6rem', cursor: 'pointer', userSelect: 'none' }}
+                              >
+                                <div style={{ minWidth: 0, flex: 1 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                    <span style={{ fontWeight: '600', color: 'var(--text-heading)' }}>{b.name}</span>
+                                    {isExpanded ? <ChevronUp size={12} style={{ color: 'var(--primary)' }} /> : <ChevronDown size={12} style={{ color: 'var(--text-muted)' }} />}
+                                  </div>
+                                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+                                    จ่ายออกจริง: €{b.paid.toFixed(2)} | ส่วนหารที่ต้องรับผิดชอบ: €{b.share.toFixed(2)}
+                                  </div>
+                                </div>
+                                <div style={{ textAlign: 'right', fontWeight: '700', fontSize: '0.85rem', color: b.balance >= 0 ? 'var(--success)' : 'var(--danger)', flexShrink: 0, marginLeft: '0.5rem' }}>
+                                  {b.balance >= 0 ? `+€${b.balance.toFixed(2)} (ได้รับคืน)` : `-€${Math.abs(b.balance).toFixed(2)} (ต้องจ่าย)`}
+                                </div>
                               </div>
+
+                              {isExpanded && (
+                                <div className="fade-in" style={{ padding: '0.5rem 0.6rem 0.65rem', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.15)', fontSize: '0.75rem' }}>
+                                  
+                                  {/* Paid Out items */}
+                                  <div style={{ marginBottom: '0.6rem' }}>
+                                    <div style={{ fontWeight: '600', color: '#ffb088', marginBottom: '0.25rem' }}>
+                                      💳 รายการที่ {b.name} จ่ายเงินออกไปให้ก่อน ({paidItems.length} รายการ - รวม €{b.paid.toFixed(2)}):
+                                    </div>
+                                    {paidItems.length === 0 ? (
+                                      <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', paddingLeft: '0.5rem' }}>ไม่มีรายการที่จ่ายสำรองออกไป</div>
+                                    ) : (
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', paddingLeft: '0.5rem' }}>
+                                        {paidItems.map(item => (
+                                          <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-main)' }}>
+                                            <span>• {item.activity} <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>({item.date})</span></span>
+                                            <span style={{ fontWeight: '600' }}>€{item.actual.toFixed(2)}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Shared items */}
+                                  <div>
+                                    <div style={{ fontWeight: '600', color: '#818cf8', marginBottom: '0.25rem' }}>
+                                      👥 รายการที่ {b.name} ร่วมหารรับผิดชอบ ({shareItems.length} รายการ - รวม €{b.share.toFixed(2)}):
+                                    </div>
+                                    {shareItems.length === 0 ? (
+                                      <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', paddingLeft: '0.5rem' }}>ไม่มีรายการที่มีส่วนหาร</div>
+                                    ) : (
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', paddingLeft: '0.5rem' }}>
+                                        {shareItems.map(item => {
+                                          const inv = item.involved && item.involved.length > 0 ? item.involved : participantsList;
+                                          const costPerPerson = item.actual / inv.length;
+                                          return (
+                                            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-main)' }}>
+                                              <span>
+                                                • {item.activity} 
+                                                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginLeft: '0.3rem' }}>
+                                                  (ยอดเต็ม €{item.actual.toFixed(2)} ÷ {inv.length} คน)
+                                                </span>
+                                              </span>
+                                              <span style={{ fontWeight: '600' }}>€{costPerPerson.toFixed(2)}</span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                </div>
+                              )}
                             </div>
-                            <div style={{ textAlign: 'right', fontWeight: '700', color: b.balance >= 0 ? 'var(--success)' : 'var(--danger)' }}>
-                              {b.balance >= 0 ? `+€${b.balance.toFixed(2)} (ได้รับคืน)` : `-€${Math.abs(b.balance).toFixed(2)} (ต้องจ่าย)`}
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
 
