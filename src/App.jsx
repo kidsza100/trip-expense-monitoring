@@ -1444,47 +1444,125 @@ function App() {
                 </MapContainer>
               </div>
 
-              {/* Day-by-Day Itinerary Cards */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {/* Day Selector Tabs Bar */}
+              <div style={{ display: 'flex', gap: '0.45rem', overflowX: 'auto', paddingBottom: '0.65rem', marginBottom: '1rem', scrollbarWidth: 'thin' }}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedMapNode('all')}
+                  style={{
+                    padding: '0.45rem 0.85rem',
+                    borderRadius: '20px',
+                    fontSize: '0.8rem',
+                    fontWeight: '600',
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    border: selectedMapNode === 'all' ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                    background: selectedMapNode === 'all' ? 'var(--primary)' : 'rgba(255,255,255,0.04)',
+                    color: selectedMapNode === 'all' ? '#fff' : 'var(--text-main)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  🗓️ All Days
+                </button>
                 {itineraryDays.map((d, i) => (
-                  <div
+                  <button
                     key={i}
-                    className="glass"
+                    type="button"
                     onClick={() => setSelectedMapNode(i)}
                     style={{
-                      borderRadius: '1rem',
-                      padding: '1rem 1.25rem',
+                      padding: '0.45rem 0.85rem',
+                      borderRadius: '20px',
+                      fontSize: '0.8rem',
+                      fontWeight: '600',
+                      whiteSpace: 'nowrap',
                       cursor: 'pointer',
-                      border: selectedMapNode === i ? '1.5px solid #6366f1' : '1.5px solid transparent',
-                      background: selectedMapNode === i ? 'rgba(99,102,241,0.08)' : undefined,
+                      border: selectedMapNode === i ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                      background: selectedMapNode === i ? 'rgba(99, 102, 241, 0.25)' : 'rgba(255,255,255,0.04)',
+                      color: selectedMapNode === i ? '#a5b4fc' : 'var(--text-main)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
                       transition: 'all 0.2s'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                      <div style={{
-                        width: 38, height: 38, borderRadius: '0.6rem',
-                        background: selectedMapNode === i ? '#6366f1' : 'var(--bg-card-alt)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '1.2rem', flexShrink: 0
-                      }}>{d.emoji}</div>
-                      <div>
-                        <div style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.95rem' }}>{d.day} — {d.city}</div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{d.date}</div>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                      {d.activities.map((act, j) => (
-                        <div key={j} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                          <span style={{
-                            fontSize: '0.72rem', color: '#a5b4fc', fontWeight: 600,
-                            minWidth: 40, paddingTop: '0.1rem', fontFamily: 'monospace'
-                          }}>{act.time}</span>
-                          <span style={{ fontSize: '0.83rem', color: 'var(--text-body)', lineHeight: 1.45 }}>{act.label}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                    <span>{d.emoji}</span>
+                    <span>{d.day} ({d.date.replace(/ (Sep|Oct)/, '')})</span>
+                  </button>
                 ))}
+              </div>
+
+              {/* Day-by-Day Itinerary Cards */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {itineraryDays
+                  .filter((_, i) => selectedMapNode === 'all' || selectedMapNode === i)
+                  .map((d, i) => {
+                    const originalIndex = selectedMapNode === 'all' ? i : selectedMapNode;
+                    return (
+                      <div
+                        key={originalIndex}
+                        className="glass fade-in"
+                        style={{
+                          borderRadius: '1rem',
+                          padding: '1.15rem 1.25rem',
+                          border: '1.5px solid rgba(99, 102, 241, 0.3)',
+                          background: 'rgba(99, 102, 241, 0.06)',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div style={{
+                              width: 40, height: 40, borderRadius: '0.6rem',
+                              background: '#6366f1',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: '1.25rem', flexShrink: 0
+                            }}>{d.emoji}</div>
+                            <div>
+                              <div style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '1rem' }}>{d.day} — {d.city}</div>
+                              <div style={{ fontSize: '0.8rem', color: '#a5b4fc', fontWeight: '500' }}>{d.date}</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(0,0,0,0.15)', padding: '0.85rem 1rem', borderRadius: '8px' }}>
+                          {d.activities.map((act, j) => (
+                            <div key={j} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                              <span style={{
+                                fontSize: '0.75rem', color: '#a5b4fc', fontWeight: 700,
+                                minWidth: 42, paddingTop: '0.1rem', fontFamily: 'monospace'
+                              }}>{act.time}</span>
+                              <span style={{ fontSize: '0.85rem', color: 'var(--text-heading)', lineHeight: 1.45 }}>{act.label}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Navigation controls if viewing single day */}
+                        {selectedMapNode !== 'all' && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)' }}>
+                            <button
+                              type="button"
+                              disabled={selectedMapNode === 0}
+                              onClick={() => setSelectedMapNode(Math.max(0, selectedMapNode - 1))}
+                              className="btn-action"
+                              style={{ padding: '0.35rem 0.75rem', fontSize: '0.78rem', opacity: selectedMapNode === 0 ? 0.4 : 1, cursor: selectedMapNode === 0 ? 'not-allowed' : 'pointer' }}
+                            >
+                              ← Day {selectedMapNode}
+                            </button>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Day {selectedMapNode + 1} of {itineraryDays.length}</span>
+                            <button
+                              type="button"
+                              disabled={selectedMapNode === itineraryDays.length - 1}
+                              onClick={() => setSelectedMapNode(Math.min(itineraryDays.length - 1, selectedMapNode + 1))}
+                              className="btn-action"
+                              style={{ padding: '0.35rem 0.75rem', fontSize: '0.78rem', opacity: selectedMapNode === itineraryDays.length - 1 ? 0.4 : 1, cursor: selectedMapNode === itineraryDays.length - 1 ? 'not-allowed' : 'pointer' }}
+                            >
+                              Day {selectedMapNode + 2} →
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
               </div>
             </div>
           );
