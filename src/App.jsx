@@ -1011,42 +1011,8 @@ function App() {
 
         {currentTab === 'dashboard' && (
           <div className="fade-in">
-            {/* Quick summary stats */}
-            <div className="dashboard-grid">
-              <div className="glass stat-card">
-                <div className="stat-card-header">
-                  <span>Actual Paid Expenses</span>
-                  <DollarSign size={18} style={{ color: 'var(--primary)' }} />
-                </div>
-                <div className="stat-card-value">€{totalActualCost.toFixed(2)}</div>
-                <div className="stat-card-desc">Total of PAID expenses across the trip</div>
-              </div>
-
-              <div className="glass stat-card">
-                <div className="stat-card-header">
-                  <span>Planned Budget</span>
-                  <Calendar size={18} style={{ color: 'var(--success)' }} />
-                </div>
-                <div className="stat-card-value">€{totalPlannedBudget.toFixed(2)}</div>
-                <div className="stat-card-desc">Initial estimated cost (Total: €{totalPlannedBudget.toFixed(0)})</div>
-              </div>
-
-              <div className="glass stat-card">
-                <div className="stat-card-header">
-                  <span>Savings / Remaining</span>
-                  <TrendingUp size={18} style={{ color: totalPlannedBudget - totalActualCost >= 0 ? 'var(--success)' : 'var(--danger)' }} />
-                </div>
-                <div className="stat-card-value" style={{ color: totalPlannedBudget - totalActualCost >= 0 ? 'var(--success)' : 'var(--danger)' }}>
-                  €{(totalPlannedBudget - totalActualCost).toFixed(2)}
-                </div>
-                <div className="stat-card-desc">
-                  {totalPlannedBudget - totalActualCost >= 0 ? "Under planned budget" : "Exceeded planned budget"}
-                </div>
-              </div>
-            </div>
-
             {/* Planned vs Actual Comparison Bar Graph */}
-            <div className="glass chart-card" style={{ marginTop: '1.25rem', padding: '1.25rem' }}>
+            <div className="glass chart-card" style={{ padding: '1.25rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <div className="chart-title" style={{ margin: 0 }}>
                   <BarChart2 size={18} style={{ color: 'var(--primary)' }} /> Budget Comparison: Planned vs Actual Paid
