@@ -20,7 +20,7 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo [2/2] Deploying to Firebase Hosting...
+echo [2/2] Deploying to Firebase Hosting (travel-app-e43a7)...
 echo.
 call npx firebase-tools deploy --only hosting
 if %errorlevel% neq 0 (
@@ -38,7 +38,7 @@ echo =======================================================
 echo    ✅ DEPLOY SUCCESSFUL! 
 echo =======================================================
 echo.
-echo  Website URL: https://trip-expense-monitoring-11ecb.web.app
+echo  Website URL: https://travel-app-e43a7.web.app
 echo.
 echo Press any key to close this window...
 pause >nul
