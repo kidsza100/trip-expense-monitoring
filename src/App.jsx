@@ -1290,105 +1290,111 @@ function App() {
 
           const itineraryDays = [
             {
-              day: 'Day 1', date: 'Fri 19 Sep', city: 'Naples 🇮🇹', emoji: '✈️',
+              day: 'Day 1', date: 'Wed 18 Sep', city: 'Naples 🇮🇹', emoji: '✈️',
               lat: 40.8518, lng: 14.2681,
               activities: [
-                { time: '06:00', label: 'Depart Bangkok → Frankfurt → Naples (U24278)' },
-                { time: '18:00', label: 'Arrive Naples Airport (NAP)' },
-                { time: '19:30', label: 'Check-in Naples hotel' },
-                { time: '20:30', label: 'Dinner in Naples centro storico' },
+                { time: '23:00', label: 'Arrive Naples Airport (NAP) — Flight from Germany' },
+                { time: '23:30', label: 'Taxi to Hotel (25€)' },
+                { time: '23:45', label: 'Check-in Naples Hotel (€182.40) & Late Dinner (60€)' },
               ]
             },
             {
-              day: 'Day 2', date: 'Sat 20 Sep', city: 'Sorrento 🌊', emoji: '🚂',
+              day: 'Day 2', date: 'Thu 19 Sep', city: 'Sorrento 🌊', emoji: '🚂',
               lat: 40.6263, lng: 14.3757,
               activities: [
-                { time: '09:00', label: 'Campania Express train Naples → Sorrento' },
-                { time: '11:00', label: 'Check-in Sorrento Airbnb (€769.56)' },
+                { time: '11:26', label: 'Train Naples → Sorrento (48€)' },
+                { time: '13:00', label: 'Check-in Sorrento Airbnb (€769.56)' },
                 { time: '14:00', label: 'Explore Sorrento cliffs & old town' },
-                { time: '19:00', label: 'Dinner with sea view at Villa Comunale' },
+                { time: '19:00', label: 'Dinner with sea view (120€)' },
               ]
             },
             {
-              day: 'Day 3', date: 'Sun 21 Sep', city: 'Amalfi Coast 🚤', emoji: '⛴️',
+              day: 'Day 3', date: 'Fri 20 Sep', city: 'Amalfi 🚤', emoji: '⛴️',
               lat: 40.6340, lng: 14.6027,
               activities: [
-                { time: '09:00', label: 'Ferry from Sorrento → Amalfi (€104 total)' },
-                { time: '11:00', label: 'Walk Amalfi old town & Duomo di Amalfi' },
-                { time: '14:00', label: 'Ferry → Positano — gelato & beach' },
-                { time: '17:00', label: 'Bus back to Sorrento' },
+                { time: '09:00', label: 'Ferry to Amalfi (206€ total / 50€/person)' },
+                { time: '11:00', label: 'Brunch & Walk Amalfi old town' },
+                { time: '14:00', label: 'Lunch & Afternoon Snack in Amalfi' },
+                { time: '19:00', label: 'Dinner at Amalfi (120€)' },
               ]
             },
             {
-              day: 'Day 4', date: 'Mon 22 Sep', city: 'Pompeii → Rome 🏛️', emoji: '🏺',
-              lat: 40.7462, lng: 13.9036,
+              day: 'Day 4', date: 'Sat 21 Sep', city: 'Positano 🚌', emoji: '🏖️',
+              lat: 40.6281, lng: 14.4850,
               activities: [
-                { time: '08:00', label: 'Morning checkout Sorrento' },
-                { time: '09:30', label: 'Train to Pompeii — explore ruins (€80)' },
-                { time: '14:00', label: 'Metropolitano train to Naples Centrale' },
-                { time: '16:00', label: 'Italo train Naples → Rome Termini' },
-                { time: '18:30', label: 'Check-in Rome hotel (€817.07)' },
+                { time: '09:00', label: 'Bus to Positano (40€ / 10€/person)' },
+                { time: '11:00', label: 'Brunch & explore Positano scenic coast' },
+                { time: '14:00', label: 'Lunch & Afternoon Snack by the beach' },
+                { time: '19:00', label: 'Dinner in Positano (60€)' },
               ]
             },
             {
-              day: 'Day 5', date: 'Tue 23 Sep', city: 'Rome — Vatican 🙏', emoji: '⛪',
+              day: 'Day 5', date: 'Sun 22 Sep', city: 'Pompei / Rome 🏛️', emoji: '🏺',
+              lat: 40.7462, lng: 14.4989,
+              activities: [
+                { time: '09:00', label: 'Train to Pompei (16€ / 4€/person) & Bag storage (12€)' },
+                { time: '10:00', label: 'Pompei Museum & Archaeological Ruins (80€)' },
+                { time: '16:20', label: 'Train to Napoli (11.09€)' },
+                { time: '17:30', label: 'Train to Rome (61.18€)' },
+                { time: '19:30', label: 'Check-in Rome Hotel (€817.07) & Dinner (120€)' },
+              ]
+            },
+            {
+              day: 'Day 6', date: 'Mon 23 Sep', city: 'Rome — Vatican 🙏', emoji: '⛪',
               lat: 41.9029, lng: 12.4534,
               activities: [
-                { time: '08:30', label: 'Vatican Museums & Sistine Chapel' },
-                { time: '12:00', label: "St. Peter's Basilica & Square" },
-                { time: '15:00', label: "Castel Sant'Angelo walk" },
-                { time: '19:30', label: 'Dinner near Piazza Navona' },
+                { time: '09:00', label: 'City transportation (34€ / 8.5€/person/day)' },
+                { time: '11:00', label: 'Brunch & Lunch in Rome city center' },
+                { time: '17:00', label: 'Vatican City Museum Tour (40€ / 20€/person)' },
+                { time: '19:30', label: 'Afternoon Snack & Dinner (60€)' },
               ]
             },
             {
-              day: 'Day 6', date: 'Wed 24 Sep', city: 'Rome — Colosseum 🏟️', emoji: '🗿',
+              day: 'Day 7', date: 'Tue 24 Sep', city: 'Rome — Colosseum 🏟️', emoji: '🗿',
               lat: 41.8902, lng: 12.4922,
               activities: [
-                { time: '09:00', label: 'Colosseum & Roman Forum & Palatine Hill' },
-                { time: '13:00', label: 'Lunch at Testaccio market' },
-                { time: '15:00', label: 'Trevi Fountain & Spanish Steps' },
-                { time: '20:00', label: 'Dinner: Roman pasta & tiramisu' },
+                { time: '09:00', label: 'Colosseum & Roman Forum (36€ / 18€/person)' },
+                { time: '11:00', label: 'City transportation (34€)' },
+                { time: '13:00', label: 'Brunch, Lunch & Trevi Fountain walk' },
+                { time: '19:30', label: 'Afternoon Snack & Dinner (120€)' },
               ]
             },
             {
-              day: 'Day 7', date: 'Thu 25 Sep', city: 'Florence 🌸', emoji: '🚄',
+              day: 'Day 8', date: 'Wed 25 Sep', city: 'Rome → Florence 🌸', emoji: '🚄',
               lat: 43.7696, lng: 11.2558,
               activities: [
-                { time: '08:00', label: 'Checkout Rome hotel' },
-                { time: '09:30', label: 'Frecciarossa train Rome → Florence (1h30m)' },
-                { time: '11:30', label: 'Check-in Florence Airbnb (€494.18)' },
-                { time: '14:00', label: 'Uffizi Gallery walk & Piazzale Michelangelo' },
-                { time: '20:00', label: 'Florentine steak dinner (€220)' },
+                { time: '11:00', label: 'Brunch in Rome' },
+                { time: '12:55', label: 'Train Rome → Florence (78.24€)' },
+                { time: '15:00', label: 'Check-in Florence Hotel (€494.18)' },
+                { time: '19:30', label: 'Florentine Steak Dinner (220€)' },
               ]
             },
             {
-              day: 'Day 8', date: 'Fri 26 Sep', city: 'Florence — Art 🎨', emoji: '🖼️',
+              day: 'Day 9', date: 'Thu 26 Sep', city: 'Florence — Art 🎨', emoji: '🖼️',
               lat: 43.7769, lng: 11.2600,
               activities: [
-                { time: '09:00', label: 'Accademia Gallery — David by Michelangelo (€96)' },
-                { time: '12:00', label: 'Mercato Centrale lunch' },
-                { time: '14:00', label: 'Ponte Vecchio & Oltrarno neighbourhood' },
-                { time: '19:30', label: 'Dinner + Aperol Spritz at local trattoria' },
+                { time: '09:00', label: 'Accademia Gallery Tickets — David Statue (96€)' },
+                { time: '11:00', label: 'City transportation (20€) & Brunch' },
+                { time: '14:00', label: 'Lunch, Afternoon Snack & Ponte Vecchio' },
+                { time: '19:30', label: 'Dinner in Florence (60€)' },
               ]
             },
             {
-              day: 'Day 9', date: 'Sat 27 Sep', city: 'Florence → Rome 🏁', emoji: '🛍️',
+              day: 'Day 10', date: 'Fri 27 Sep', city: 'Florence → Rome 🏁', emoji: '🛍️',
               lat: 41.9028, lng: 12.4964,
               activities: [
-                { time: '09:00', label: 'Last Florence sightseeing & shopping' },
-                { time: '13:00', label: 'Frecciarossa train Florence → Rome' },
-                { time: '15:00', label: 'Souvenir shopping Rome (€40)' },
-                { time: '19:00', label: 'Final dinner near Termini' },
+                { time: '11:00', label: 'Brunch & Lunch in Florence' },
+                { time: '17:59', label: 'Train Florence → Rome (78.24€)' },
+                { time: '19:30', label: 'Check-in Rome Hotel (€294.00) & Dinner (120€)' },
               ]
             },
             {
-              day: 'Day 10', date: 'Sun 28 Sep', city: 'Fly Home ✈️', emoji: '🏠',
+              day: 'Day 11', date: 'Sat 28 Sep', city: 'Rome, Fly Back ✈️', emoji: '🏠',
               lat: 41.7999, lng: 12.2462,
               activities: [
-                { time: '05:00', label: 'Hotel checkout' },
-                { time: '06:30', label: 'Transfer to Fiumicino Airport (FCO)' },
-                { time: '09:00', label: 'EasyJet flight Rome → Frankfurt/Munich' },
-                { time: '20:00', label: 'Connect Bangkok flight home 🏠' },
+                { time: '09:00', label: 'Brunch & Souvenir shopping in Rome (40€)' },
+                { time: '11:00', label: 'Lunch near Termini' },
+                { time: '13:00', label: 'Flight out of Rome back to Germany ✈️' },
               ]
             },
           ];

@@ -11,7 +11,7 @@ export const initialTrips = [
     },
     expenses: [
       // Flight ticket - HAS TICKET (Flight ticket.pdf) -> Paid by Thitiwut
-      { id: 1, date: "2026-07-31", activity: "Flight ticket (Munich - Naples / Rome - Frankfurt)", category: "Flight ticket", budget: 1000.00, actual: 860.00, status: "paid", paidBy: "Thitiwut", hasTicket: true, involved: ["Apichanat", "Potchara", "Thitiwut", "Woraphan"] },
+      { id: 1, date: "2026-07-31", activity: "Flight ticket (Germany - Naples / Rome - Germany)", category: "Flight ticket", budget: 1000.00, actual: 859.40, status: "paid", paidBy: "Thitiwut", hasTicket: true, involved: ["Apichanat", "Potchara", "Thitiwut", "Woraphan"] },
       
       // 18-Sep
       { id: 2, date: "2026-09-18", activity: "Train discount 20%", category: "Transportation", budget: 0.0, actual: 39.40, status: "pending", paidBy: "Thitiwut", hasTicket: false, involved: ["Apichanat", "Potchara", "Thitiwut", "Woraphan"] },
