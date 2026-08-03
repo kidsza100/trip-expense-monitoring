@@ -31,7 +31,11 @@ import {
   Moon,
   Eye,
   Receipt,
-  Trash2
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  Calculator,
+  Info
 } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
@@ -59,6 +63,11 @@ function App() {
   const [copiedId, setCopiedId] = useState(null);
   const [previewTicket, setPreviewTicket] = useState(null);
   const [previewReceiptUrl, setPreviewReceiptUrl] = useState(null);
+  const [showCalcDetail, setShowCalcDetail] = useState(false);
+  const [editingAccountParticipant, setEditingAccountParticipant] = useState(null);
+  const [tempBankName, setTempBankName] = useState('');
+  const [tempAccountNumber, setTempAccountNumber] = useState('');
+  const [tempAccountName, setTempAccountName] = useState('');
 
   const handleCopyText = (text, id) => {
     navigator.clipboard.writeText(text);
@@ -614,6 +623,21 @@ function App() {
       }
       return t;
     }));
+  };
+
+  const handleStartEditAccount = (p) => {
+    const acc = activeTrip.accounts ? activeTrip.accounts[p] : {};
+    setTempBankName(acc?.bankName || '');
+    setTempAccountNumber(acc?.accountNumber || '');
+    setTempAccountName(acc?.accountName || '');
+    setEditingAccountParticipant(p);
+  };
+
+  const handleSaveAccountEdit = (p) => {
+    handleUpdateBankDetails(p, 'bankName', tempBankName);
+    handleUpdateBankDetails(p, 'accountNumber', tempAccountNumber);
+    handleUpdateBankDetails(p, 'accountName', tempAccountName);
+    setEditingAccountParticipant(null);
   };
 
   // Get sorted unique dates from activeTrip expenses
@@ -1467,6 +1491,93 @@ function App() {
                   })}
                 </div>
               )}
+
+              {/* Calculation Detail Breakdown Section */}
+              <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowCalcDetail(!showCalcDetail)}
+                  className="btn-action"
+                  style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.65rem 1rem', background: 'rgba(99, 102, 241, 0.08)', border: '1px solid rgba(99, 102, 241, 0.2)', borderRadius: '8px', color: 'var(--text-heading)', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer' }}
+                >
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Calculator size={16} style={{ color: 'var(--primary)' }} />
+                    รายละเอียดขั้นตอนการคำนวณ (Calculation Breakdown)
+                  </span>
+                  {showCalcDetail ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+
+                {showCalcDetail && (
+                  <div className="fade-in" style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.82rem', color: 'var(--text-main)' }}>
+                    
+                    {/* Step 1: Individual Shares */}
+                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.85rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                      <div style={{ fontWeight: '700', color: 'var(--text-heading)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Info size={14} style={{ color: 'var(--primary)' }} />
+                        1. สรุปยอดจ่ายจริงและค่าใช้จ่ายรายคน (Individual Outlay & Share)
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                        {balances.map(b => (
+                          <div key={b.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.35rem 0.5rem', background: 'rgba(0,0,0,0.1)', borderRadius: '6px' }}>
+                            <div>
+                              <span style={{ fontWeight: '600', color: 'var(--text-heading)' }}>{b.name}</span>
+                              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                                จ่ายออกจริง: €{b.paid.toFixed(2)} | ส่วนหารที่ต้องรับผิดชอบ: €{b.share.toFixed(2)}
+                              </div>
+                            </div>
+                            <div style={{ textAlign: 'right', fontWeight: '700', color: b.balance >= 0 ? 'var(--success)' : 'var(--danger)' }}>
+                              {b.balance >= 0 ? `+€${b.balance.toFixed(2)} (ได้รับคืน)` : `-€${Math.abs(b.balance).toFixed(2)} (ต้องจ่าย)`}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Step 2: Family Grouping */}
+                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.85rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                      <div style={{ fontWeight: '700', color: 'var(--text-heading)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Users size={14} style={{ color: 'var(--warning)' }} />
+                        2. สรุปยอดสุทธิตามกลุ่มตระกูล (Family Net Balance)
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                        {(() => {
+                          const famBals = {};
+                          participantsList.forEach(p => {
+                            const acc = activeTrip.accounts ? activeTrip.accounts[p] : {};
+                            const fam = acc.family && acc.family.trim() !== '' ? acc.family.trim() : `Single-${p}`;
+                            if (!famBals[fam]) famBals[fam] = { name: fam, members: [], sumBal: 0 };
+                            const pBal = balances.find(b => b.name === p);
+                            famBals[fam].members.push(p);
+                            famBals[fam].sumBal += pBal ? pBal.balance : 0;
+                          });
+                          return Object.values(famBals).map(f => (
+                            <div key={f.name} style={{ padding: '0.35rem 0.5rem', background: 'rgba(0,0,0,0.1)', borderRadius: '6px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontWeight: '600', color: 'var(--text-heading)' }}>{f.name.startsWith('Single-') ? f.members[0] : f.name} ({f.members.join(', ')})</span>
+                                <span style={{ fontWeight: '700', color: f.sumBal >= 0 ? 'var(--success)' : 'var(--danger)' }}>
+                                  {f.sumBal >= 0 ? `+€${f.sumBal.toFixed(2)}` : `-€${Math.abs(f.sumBal).toFixed(2)}`}
+                                </span>
+                              </div>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Step 3: Transfers Logic Explanation */}
+                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.85rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                      <div style={{ fontWeight: '700', color: 'var(--text-heading)', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Check size={14} style={{ color: 'var(--success)' }} />
+                        3. ผลลัพธ์การหักกลบสบหนี้ (Minimal Transfer Matching)
+                      </div>
+                      <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                        ระบบจับคู่ยอดจ่ายสุทธิระหว่างตระกูลเพื่อลดจำนวนครั้งในการโอนให้มากที่สุด โดยกลุ่มตระกูลที่มียอดติดลบจะโอนตรงเข้าบัญชีกลุ่มตระกูลที่มียอดบวก
+                      </p>
+                    </div>
+
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Right Column: Participant accounts configuration */}
@@ -1479,48 +1590,94 @@ function App() {
               <div className="repayment-accounts">
                 {participantsList.map(p => {
                   const acc = activeTrip.accounts ? activeTrip.accounts[p] : { bankName: '', accountNumber: '', accountName: '' };
+                  const isEditing = editingAccountParticipant === p;
                   return (
                     <div key={p} className="account-setup-card">
-                      <div style={{ fontWeight: '700', color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem' }}>
-                        <CreditCard size={14} style={{ color: 'var(--primary)' }} />
-                        {p}'s Account
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <div style={{ fontWeight: '700', color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem' }}>
+                          <CreditCard size={14} style={{ color: 'var(--primary)' }} />
+                          {p}'s Account
+                        </div>
+                        {isEditing ? (
+                          <div style={{ display: 'flex', gap: '0.35rem' }}>
+                            <button 
+                              onClick={() => handleSaveAccountEdit(p)}
+                              className="btn-action"
+                              style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', background: 'var(--primary)', color: '#fff', borderRadius: '4px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.2rem', fontWeight: '600' }}
+                            >
+                              <Check size={11} /> Save
+                            </button>
+                            <button 
+                              onClick={() => setEditingAccountParticipant(null)}
+                              className="btn-action"
+                              style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', borderRadius: '4px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}
+                            >
+                              <X size={11} /> Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button 
+                            onClick={() => handleStartEditAccount(p)}
+                            className="btn-action"
+                            style={{ padding: '0.2rem 0.55rem', fontSize: '0.75rem', background: 'rgba(99, 102, 241, 0.15)', border: '1px solid rgba(99, 102, 241, 0.3)', color: '#a5b4fc', borderRadius: '4px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontWeight: '600' }}
+                          >
+                            <Edit2 size={11} /> Edit
+                          </button>
+                        )}
                       </div>
-                      
-                      <div className="account-form-grid">
-                        <input 
-                          type="text" 
-                          placeholder="Bank Name (e.g. KBank)" 
-                          value={acc?.bankName || ''} 
-                          onChange={(e) => handleUpdateBankDetails(p, 'bankName', e.target.value)}
-                          className="form-input"
-                          style={{ fontSize: '0.8rem', padding: '0.4rem' }}
-                        />
-                        <input 
-                          type="text" 
-                          placeholder="Account Number" 
-                          value={acc?.accountNumber || ''} 
-                          onChange={(e) => handleUpdateBankDetails(p, 'accountNumber', e.target.value)}
-                          className="form-input"
-                          style={{ fontSize: '0.8rem', padding: '0.4rem' }}
-                        />
-                        <input 
-                          type="text" 
-                          placeholder="Account Owner Name (ชื่อเจ้าของบัญชี)" 
-                          value={acc?.accountName || ''} 
-                          onChange={(e) => handleUpdateBankDetails(p, 'accountName', e.target.value)}
-                          className="form-input"
-                          style={{ fontSize: '0.8rem', padding: '0.4rem', gridColumn: 'span 2' }}
-                        />
-                        <input 
-                          type="text" 
-                          readOnly
-                          placeholder="Family Group (Organize via button above)" 
-                          value={acc?.family ? `Family: ${acc.family}` : 'No Family Group'} 
-                          className="form-input"
-                          title="Change family assignment using the 'Organize Families' button above"
-                          style={{ fontSize: '0.8rem', padding: '0.4rem', gridColumn: 'span 2', borderLeft: '3px solid var(--warning)', opacity: 0.75, cursor: 'not-allowed', background: 'rgba(255, 255, 255, 0.04)' }}
-                        />
-                      </div>
+
+                      {isEditing ? (
+                        <div className="account-form-grid">
+                          <input 
+                            type="text" 
+                            placeholder="Bank Name (e.g. KBank / N26)" 
+                            value={tempBankName} 
+                            onChange={(e) => setTempBankName(e.target.value)}
+                            className="form-input"
+                            style={{ fontSize: '0.8rem', padding: '0.4rem' }}
+                          />
+                          <input 
+                            type="text" 
+                            placeholder="Account Number" 
+                            value={tempAccountNumber} 
+                            onChange={(e) => setTempAccountNumber(e.target.value)}
+                            className="form-input"
+                            style={{ fontSize: '0.8rem', padding: '0.4rem' }}
+                          />
+                          <input 
+                            type="text" 
+                            placeholder="Account Owner Name (ชื่อเจ้าของบัญชี)" 
+                            value={tempAccountName} 
+                            onChange={(e) => setTempAccountName(e.target.value)}
+                            className="form-input"
+                            style={{ fontSize: '0.8rem', padding: '0.4rem', gridColumn: 'span 2' }}
+                          />
+                          <input 
+                            type="text" 
+                            readOnly
+                            placeholder="Family Group (Organize via button above)" 
+                            value={acc?.family ? `Family: ${acc.family}` : 'No Family Group'} 
+                            className="form-input"
+                            title="Change family assignment using the 'Organize Families' button above"
+                            style={{ fontSize: '0.8rem', padding: '0.4rem', gridColumn: 'span 2', borderLeft: '3px solid var(--warning)', opacity: 0.75, cursor: 'not-allowed', background: 'rgba(255, 255, 255, 0.04)' }}
+                          />
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '0.35rem' }}>
+                          {acc?.bankName || acc?.accountNumber || acc?.accountName ? (
+                            <>
+                              <div>🏦 ธนาคาร: <span style={{ color: 'var(--text-heading)', fontWeight: '500' }}>{acc.bankName || '-'}</span></div>
+                              <div>👤 เจ้าของบัญชี: <span style={{ color: 'var(--text-heading)', fontWeight: '500' }}>{acc.accountName || p}</span></div>
+                              <div>💳 เลขบัญชี: <span style={{ color: 'var(--text-heading)', fontWeight: '500' }}>{acc.accountNumber || '-'}</span></div>
+                              <div>🏠 กลุ่ม: <span style={{ color: 'var(--warning)', fontWeight: '500' }}>{acc.family ? `Family ${acc.family}` : 'ไม่ระบุ'}</span></div>
+                            </>
+                          ) : (
+                            <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.78rem' }}>
+                              ยังไม่ได้ตั้งค่าบัญชี — กดปุ่ม Edit ด้านบนเพื่อใส่ข้อมูล
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
